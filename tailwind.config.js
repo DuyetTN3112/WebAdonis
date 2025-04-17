@@ -3,10 +3,10 @@
 const config = {
   darkMode: ["class"],
   content: [
-    "./resources/js/pages/**/*.{ts,tsx}",
-    "./resources/js/components/**/*.{ts,tsx}",
-    "./resources/js/layouts/**/*.{ts,tsx}",
-    "./resources/js/app.tsx",
+    "./inertia/pages/**/*.{ts,tsx}",
+    "./inertia/components/**/*.{ts,tsx}",
+    "./inertia/layouts/**/*.{ts,tsx}",
+    "./inertia/app/app.tsx",
   ],
   prefix: "",
   theme: {

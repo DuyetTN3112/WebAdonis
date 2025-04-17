@@ -1,3 +1,4 @@
+import React from 'react'
 import { Head, useForm } from '@inertiajs/react'
 import Layout from '../../app/layout'
 

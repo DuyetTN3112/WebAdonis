@@ -19,17 +19,17 @@
       "node"
     ],
     "paths": {
-      "@/*": ["resources/js/*"],
+      "@/*": ["inertia/app/*"],
       "#/*": ["./*"]
     }
   },
   "include": [
-    "resources/js/**/*",
+    "inertia/**/*",
     "app/**/*",
     "start/**/*",
     "config/**/*",
     "types/**/*",
     "bin/**/*"
   ],
-  "exclude": ["node_modules", "build", "inertia/**/*"]
+  "exclude": ["node_modules", "build"]
 }
