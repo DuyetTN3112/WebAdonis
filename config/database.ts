@@ -4,8 +4,8 @@ import { defineConfig } from '@adonisjs/lucid'
 const dbConfig = defineConfig({
   connection: 'mysql',
   connections: {
-    postgres: {
-      client: 'pg',
+    mysql: {
+      client: 'mysql2',
       connection: {
         host: env.get('DB_HOST'),
         port: env.get('DB_PORT'),

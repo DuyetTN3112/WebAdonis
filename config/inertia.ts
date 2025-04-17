@@ -1,32 +1,30 @@
 import { defineConfig } from '@adonisjs/inertia'
-import type { HttpContext } from '@adonisjs/core/http'
+import type { InferSharedProps } from '@adonisjs/inertia/types'
 
 const inertiaConfig = defineConfig({
-  rootView: 'app',
-  assetsVersion: 1,
+  /**
+   * Path to the Edge view that will be used as the root view for Inertia responses
+   */
+  rootView: 'inertia_layout',
 
-  // You can share data with all views here
+  /**
+   * Data that should be shared with all rendered pages
+   */
   sharedData: {
-    appName: 'AdonisJS Inertia App',
-    user: (ctx: HttpContext) => ctx.auth?.user,
+    // user: (ctx) => ctx.inertia.always(() => ctx.auth.user),
   },
 
+  /**
+   * Options for the server-side rendering
+   */
   ssr: {
     enabled: false,
-    entrypoint: 'inertia/app/ssr.tsx',
-  },
+    entrypoint: 'inertia/app/ssr.tsx'
+  }
 })
 
 export default inertiaConfig
 
-// Add type augmentation for shared props
-declare module '@inertiajs/core' {
-  interface SharedProps {
-    appName: string
-    user?: {
-      id: number
-      // Add other user properties here
-    }
-    // You can manually add additional shared props here if needed
-  }
+declare module '@adonisjs/inertia/types' {
+  export interface SharedProps extends InferSharedProps<typeof inertiaConfig> {}
 }
