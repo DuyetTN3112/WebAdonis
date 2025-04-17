@@ -10,11 +10,7 @@ export default defineConfig({
   | will be scanned automatically from the "./commands" directory.
   |
   */
-  commands: [
-    () => import('@adonisjs/core/commands'),
-    () => import('@adonisjs/lucid/commands'),
-    () => import('@adonisjs/cache/commands'),
-  ],
+  commands: [() => import('@adonisjs/core/commands'), () => import('@adonisjs/lucid/commands')],
 
   /*
   |--------------------------------------------------------------------------
@@ -39,11 +35,9 @@ export default defineConfig({
     () => import('@adonisjs/shield/shield_provider'),
     () => import('@adonisjs/static/static_provider'),
     () => import('@adonisjs/cors/cors_provider'),
-    () => import('@adonisjs/inertia/inertia_provider'),
-    () => import('@adonisjs/redis/redis_provider'),
     () => import('@adonisjs/lucid/database_provider'),
-    () => import('@adonisjs/cache/cache_provider'),
     () => import('@adonisjs/auth/auth_provider'),
+    () => import('@adonisjs/inertia/inertia_provider')
   ],
 
   /*
@@ -92,8 +86,8 @@ export default defineConfig({
   */
   metaFiles: [
     {
-      pattern: 'inertia/**/*',
-      reloadServer: true,
+      pattern: 'resources/views/**/*.edge',
+      reloadServer: false,
     },
     {
       pattern: 'public/**',

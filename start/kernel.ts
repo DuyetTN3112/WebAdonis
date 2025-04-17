@@ -27,7 +27,7 @@ server.use([
   () => import('@adonisjs/static/static_middleware'),
   () => import('@adonisjs/cors/cors_middleware'),
   () => import('@adonisjs/vite/vite_middleware'),
-  () => import('@adonisjs/inertia/inertia_middleware'),
+  () => import('@adonisjs/inertia/inertia_middleware')
 ])
 
 /**
@@ -38,16 +38,14 @@ router.use([
   () => import('@adonisjs/core/bodyparser_middleware'),
   () => import('@adonisjs/session/session_middleware'),
   () => import('@adonisjs/shield/shield_middleware'),
-  () => import('@adonisjs/auth/initialize_auth_middleware'),
-  () => import('./../app/middleware/check_auth_middleware.js'),
+  () => import('@adonisjs/auth/initialize_auth_middleware')
 ])
 
 /**
  * Named middleware collection must be explicitly assigned to
  * the routes or the routes group.
  */
-export const middleware = {
-  auth: () => import('./../app/middleware/auth_middleware.js').then((module) => module.default),
-  guest: () => import('./../app/middleware/guest_middleware.js').then((module) => module.default),
-  admin: () => import('./../app/middleware/admin_middleware.js').then((module) => module.default),
-}
+export const middleware = router.named({
+  guest: () => import('#middleware/guest_middleware'),
+  auth: () => import('#middleware/auth_middleware')
+})
