@@ -1,8 +1,17 @@
 import { DateTime } from 'luxon'
+import { BaseModel, column, hasMany } from '@adonisjs/lucid/orm'
 import hash from '@adonisjs/core/services/hash'
-import { compose } from '@adonisjs/core/helpers'
-import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
+import { compose } from '@adonisjs/core/helpers'
+import Post from '#models/post'
+import Comment from '#models/comment'
+import Notification from '#models/notification'
+import type { HasMany } from '@adonisjs/lucid/types/relations'
+
+export enum UserRole {
+  ADMIN = 0,
+  USER = 1,
+}
 
 const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
   uids: ['email'],
@@ -11,20 +20,38 @@ const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
 
 export default class User extends compose(BaseModel, AuthFinder) {
   @column({ isPrimary: true })
-  declare id: number
+  declare public id: number
 
   @column()
-  declare fullName: string | null
+  declare public username: string
 
   @column()
-  declare email: string
+  declare public email: string
 
   @column({ serializeAs: null })
-  declare password: string
+  declare public password: string
+
+  @column()
+  declare public phone_number: string | null
+
+  @column()
+  declare public student_id: string | null
+
+  @column()
+  declare public role: UserRole
+
+  @column()
+  declare public avatar: string | null
 
   @column.dateTime({ autoCreate: true })
-  declare createdAt: DateTime
+  declare public created_at: DateTime
 
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
-  declare updatedAt: DateTime | null
+  @hasMany(() => Post)
+  declare public posts: HasMany<typeof Post>
+
+  @hasMany(() => Comment)
+  declare public comments: HasMany<typeof Comment>
+
+  @hasMany(() => Notification)
+  declare public notifications: HasMany<typeof Notification>
 }

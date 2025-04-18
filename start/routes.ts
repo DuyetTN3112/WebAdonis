@@ -8,5 +8,8 @@
 */
 
 import router from '@adonisjs/core/services/router'
-router.on('/').renderInertia('home')
-
+const HomeController = () => import('#controllers/http/home_controller')
+router.get('/', [HomeController, 'index']) // đúng chuẩn AdonisJS
+// router.get('/', async ({ inertia }) => {
+//   return inertia.render('auth') // không cần import inertia
+// })

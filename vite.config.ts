@@ -1,11 +1,15 @@
 import { defineConfig } from 'vite'
-import { getDirname } from '@adonisjs/core/helpers'
+// import { getDirname } from '@adonisjs/core/helpers'
 import inertia from '@adonisjs/inertia/client'
 import react from '@vitejs/plugin-react'
 import adonisjs from '@adonisjs/vite/client'
 
 export default defineConfig({
-  plugins: [inertia({ ssr: { enabled: false } }), react(), adonisjs({ entrypoints: ['inertia/app/app.tsx'], reload: ['resources/views/**/*.edge'] })],
+  plugins: [
+    inertia({ ssr: { enabled: false } }),
+    react(),
+    adonisjs({ entrypoints: ['inertia/app/app.tsx'], reload: ['inertia/**/*.tsx'] }),
+  ],
 
   /**
    * Define aliases for importing modules from
@@ -13,7 +17,7 @@ export default defineConfig({
    */
   resolve: {
     alias: {
-      '~/': `${getDirname(import.meta.url)}/inertia/`,
+      '@': '/inertia', // Update alias to point to inertia directory
     },
   },
 })
