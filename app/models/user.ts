@@ -3,8 +3,8 @@ import { BaseModel, column, hasMany } from '@adonisjs/lucid/orm'
 import hash from '@adonisjs/core/services/hash'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import { compose } from '@adonisjs/core/helpers'
-import Post from '#models/post'
-import Comment from '#models/comment'
+import Post from './post.js'
+import Comment from './comment.js'
 import Notification from '#models/notification'
 import type { HasMany } from '@adonisjs/lucid/types/relations'
 
@@ -19,6 +19,8 @@ const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
 })
 
 export default class User extends compose(BaseModel, AuthFinder) {
+  public static table = 'user'
+
   @column({ isPrimary: true })
   declare public id: number
 
@@ -46,10 +48,14 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column.dateTime({ autoCreate: true })
   declare public created_at: DateTime
 
-  @hasMany(() => Post)
+  @hasMany(() => Post, {
+    foreignKey: 'user_id',
+  })
   declare public posts: HasMany<typeof Post>
 
-  @hasMany(() => Comment)
+  @hasMany(() => Comment, {
+    foreignKey: 'user_id',
+  })
   declare public comments: HasMany<typeof Comment>
 
   @hasMany(() => Notification)

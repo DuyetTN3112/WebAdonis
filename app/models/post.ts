@@ -1,67 +1,63 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, belongsTo, hasMany, manyToMany } from '@adonisjs/lucid/orm'
+import { BaseModel, belongsTo, column, hasMany, manyToMany } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany, ManyToMany } from '@adonisjs/lucid/types/relations'
-import User from '#models/user'
-import Comment from '#models/comment'
-import Module from '#models/module'
+import User from './user.js'
+import Comment from './comment.js'
+import Module from './module.js'
 
 export default class Post extends BaseModel {
   public static table = 'post'
+
   @column({ isPrimary: true })
-  declare public id: number
+  declare id: number
 
   @column()
-  declare public user_id: number
+  declare user_id: number
 
   @column()
-  declare public title: string
+  declare title: string
 
   @column()
-  declare public content: string | null
+  declare content: string | null
 
   @column()
-  declare public view_count: number
+  declare view_count: number
 
   @column()
-  declare public like_count: number
+  declare like_count: number
 
   @column()
-  declare public dislike_count: number
+  declare dislike_count: number
 
   @column()
-  declare public image: string | null
+  declare image: string | null
 
   @column()
-  declare public is_hidden: boolean
+  declare liked: string | null
 
   @column()
-  declare public module_id: number
+  declare disliked: string | null
 
-  @belongsTo(() => User)
-  declare public user: BelongsTo<typeof User>
+  @column.dateTime({ autoCreate: true })
+  declare created_at: DateTime
+
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updated_at: DateTime
+
+  @belongsTo(() => User, {
+    foreignKey: 'user_id',
+  })
+  declare user: BelongsTo<typeof User>
 
   @hasMany(() => Comment, {
     foreignKey: 'post_id',
   })
-  declare public comments: HasMany<typeof Comment>
+  declare comments: HasMany<typeof Comment>
 
   @manyToMany(() => Module, {
-    pivotTable: 'module_post',
+    pivotTable: 'module_posts',
+    pivotForeignKey: 'post_id',
+    pivotRelatedForeignKey: 'module_id',
   })
-  declare public modules: ManyToMany<typeof Module>
-
-  @belongsTo(() => Module)
-  declare public module: BelongsTo<typeof Module>
-
-  @column.dateTime({ autoCreate: true })
-  declare public created_at: DateTime
-
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
-  declare public updated_at: DateTime
-
-  @column()
-  declare public liked: string | null
-
-  @column()
-  declare public disliked: string | null
+  declare modules: ManyToMany<typeof Module>
 }

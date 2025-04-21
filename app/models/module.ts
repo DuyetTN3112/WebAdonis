@@ -1,36 +1,30 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, manyToMany, belongsTo } from '@adonisjs/lucid/orm'
-import type { ManyToMany, BelongsTo } from '@adonisjs/lucid/types/relations'
-import Post from '#models/post'
-import User from './user.js'
+import { BaseModel, column, manyToMany } from '@adonisjs/lucid/orm'
+import type { ManyToMany } from '@adonisjs/lucid/types/relations'
+import Post from './post.js'
 
 export default class Module extends BaseModel {
+  public static table = 'module'
+
   @column({ isPrimary: true })
-  declare public id: number
+  declare id: number
 
   @column()
-  declare public name: string
+  declare name: string
 
   @column()
-  declare public description: string | null
-  @column()
-  declare public is_private: boolean
-  @column()
-  declare public is_hidden: boolean
-  @column()
-  declare public user_id: number
-
-  @belongsTo(() => User)
-  declare public user: BelongsTo<typeof User>
+  declare description: string | null
 
   @column.dateTime({ autoCreate: true })
-  declare public created_at: DateTime
+  declare created_at: DateTime
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
-  declare public updated_at: DateTime
+  declare updated_at: DateTime
 
   @manyToMany(() => Post, {
-    pivotTable: 'module_post',
+    pivotTable: 'module_posts',
+    pivotForeignKey: 'module_id',
+    pivotRelatedForeignKey: 'post_id',
   })
-  declare public posts: ManyToMany<typeof Post>
+  declare posts: ManyToMany<typeof Post>
 }
