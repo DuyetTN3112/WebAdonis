@@ -1,35 +1,93 @@
+import { Request, Response } from '@adonisjs/core/http'
 import { inject } from '@adonisjs/core'
 import { HttpContext } from '@adonisjs/core/http'
 import Module from '#models/module'
 import Post from '#models/post'
 
-export default class ModulesController {
+export default class ModuleController {
+  /**
+   * Display the modules page
+   */
   @inject()
-  async index({ inertia, request }: HttpContext) {
-    const modules = await Module.all()
-    const moduleId = request.input('module_id')
-    const page = request.input('page', 1)
-    const limit = 10
+  public async index({ inertia, auth }: HttpContext) {
+    try {
+      const modules = await Module.all()
+      console.log('Found modules:', modules.length)
+      console.log('Rendering module page with data:', { modules })
 
-    let selectedModule = null
-    let postsPagination = null
-
-    if (moduleId) {
-      selectedModule = await Module.find(moduleId)
-      if (selectedModule) {
-        postsPagination = await Post.query()
-          .where('module_id', moduleId)
-          .preload('user')
-          .orderBy('created_at', 'desc')
-          .paginate(page, limit)
-      }
+      return inertia.render('module', {
+        modules: modules,
+        user: auth.user
+      })
+    } catch (error) {
+      console.error('Error in ModuleController:', error)
+      console.error('Error stack:', error.stack)
+      return inertia.render('module', {
+        error: 'Error loading modules',
+        modules: [],
+        user: auth.user
+      })
     }
+  }
 
-    return inertia.render('modules/index', {
-      modules: modules.map((module) => module.serialize()),
-      selectedModule: selectedModule?.serialize(),
-      posts: postsPagination?.serialize().data || [],
-      meta: postsPagination?.serialize().meta || {},
-    })
+  /**
+   * Get all modules for API
+   */
+  @inject()
+  public async getModules({ response }: { response: Response }) {
+    try {
+      const modules = await Module.all()
+      return response.json(modules)
+    } catch (error) {
+      console.error('Error in ModuleController.getModules:', error)
+      return response.status(500).json({
+        message: 'Error loading modules',
+        error: error.message
+      })
+    }
+  }
+
+  /**
+   * Get posts for a specific module
+   */
+  @inject()
+  public async getPosts({ params, response }: { params: { id: string }; response: Response }) {
+    try {
+      console.log('Fetching posts for module ID:', params.id)
+      const module = await Module.findOrFail(params.id)
+      console.log('Found module:', module.toJSON())
+
+      const posts = await Post.query()
+        .whereHas('modules', (query) => {
+          query.where('module_id', module.id)
+        })
+        .preload('user', (query) => {
+          query.select('id', 'username')
+        })
+        .preload('modules', (query) => {
+          query.select('id', 'name')
+        })
+      console.log('Found posts:', posts.length)
+
+      const formattedPosts = posts.map((post) => ({
+        id: post.id,
+        title: post.title,
+        content: post.content,
+        author: post.user.username,
+        created_at: post.created_at,
+        module_names: post.modules.map((m) => m.name).join(', '),
+      }))
+
+      return response.json(formattedPosts)
+    } catch (error) {
+      console.error('Error in ModuleController.getPosts:', error)
+      console.error('Error stack:', error.stack)
+      return response.status(500).json({
+        message: 'Error loading module posts',
+        error: error.message,
+        stack: error.stack,
+        details: error,
+      })
+    }
   }
 }

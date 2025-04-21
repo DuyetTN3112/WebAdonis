@@ -2,7 +2,10 @@ import type { Config } from 'tailwindcss'
 
 const config: Config = {
   darkMode: 'class',
-  content: ['./inertia/**/*.{ts,tsx}', './resources/views/**/*.edge'],
+  content: [
+    './inertia/**/*.{ts,tsx}',
+    './resources/views/**/*.edge',
+  ],
   theme: {
     extend: {
       colors: {

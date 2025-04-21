@@ -7,8 +7,8 @@
     "paths": {
       "~/*": ["./*"],
 
-      "@/components/*": ["pages/components/*"],
-      "@/components/ui/*": ["pages/components/ui/*"],
+      "@/components/*": ["components/*"],
+      "@/components/ui/*": ["components/ui/*"],
       "@/lib/*": ["lib/*"],
       "@/lib/utils": ["lib/utils.ts"],
       "@/hooks/*": ["hooks/*"]

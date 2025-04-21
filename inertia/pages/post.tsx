@@ -10,6 +10,11 @@ import { Card, CardHeader, CardContent, CardFooter } from '../components/ui/card
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar'
 import { Badge } from '../components/ui/badge'
 import { ScrollArea } from '../components/ui/scroll-area'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../components/ui/dropdown-menu'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
+import { Skeleton } from '../components/ui/skeleton'
+import { MoreVertical, ThumbsUp, ThumbsDown, MessageCircle, Edit, Trash2, Plus } from 'lucide-react'
 
 interface User {
   id: number
@@ -88,6 +93,7 @@ export default function PostPage({ user, posts, current_filter }: PostProps) {
   const [newComments, setNewComments] = useState<Record<number, string>>({})
   const [commentImages, setCommentImages] = useState<Record<number, File | null>>({})
   const [editingComment, setEditingComment] = useState<{ id: number | null, postId: number | null, content: string }>({ id: null, postId: null, content: '' })
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     feather.replace()
@@ -95,39 +101,21 @@ export default function PostPage({ user, posts, current_filter }: PostProps) {
 
   const handleLikeDislike = async (postId: number, type: 'like' | 'dislike') => {
     try {
+      setLoading(true)
       const response = await fetch(`/posts/${postId}/like-dislike`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || ''
         },
-        body: JSON.stringify({ type })
+        body: JSON.stringify({ type }),
       })
 
-      if (!response.ok) {
-        throw new Error('Network response was not ok')
-      }
+      if (!response.ok) throw new Error('Failed to update like/dislike')
 
-      const data = await response.json()
-
-      // Update the post in the posts array
-      const updatedPosts = posts.data.map(post => {
-        if (post.id === postId) {
-          return {
-            ...post,
-            like_count: data.likes,
-            dislike_count: data.dislikes,
-            liked: data.liked_users,
-            disliked: data.disliked_users
-          }
-        }
-        return post
-      })
-
-      // Update the posts in the state
-      posts.data = updatedPosts
     } catch (error) {
       console.error('Error:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -301,452 +289,179 @@ export default function PostPage({ user, posts, current_filter }: PostProps) {
     return user && post.disliked?.split(',').includes(user.id.toString())
   }
 
-  return (
-    <>
-      <Head title="Posts | ForumGW" />
-      
-      <div className="container px-4 py-8 mx-auto">
-        {/* Create Post Button */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-white">
-            {user ? `Welcome ${user.username}` : 'Recent Posts'}
-          </h1>
-          
-          {user && (
-            <Button 
-              onClick={() => setShowCreateModal(true)}
-              className="bg-custom-orange hover:bg-custom-orange-dark text-black"
-            >
-              Create Post
-            </Button>
-          )}
-        </div>
-
-        {/* Filter Options */}
-        <div className="flex space-x-4 mb-6">
-          <Link
-            href="/?filter=most_view"
-            className={cn(
-              "flex items-center space-x-2 px-4 py-2 text-sm hover:text-custom-orange transition-colors",
-              current_filter === 'most_view' ? 'text-custom-orange' : 'text-custom-lightGray'
-            )}
-          >
-            <i data-feather="eye" className="w-4 h-4" />
-            <span>Most View</span>
-          </Link>
-          <Link
-            href="/?filter=most_liked"
-            className={cn(
-              "flex items-center space-x-2 px-4 py-2 text-sm hover:text-custom-orange transition-colors",
-              current_filter === 'most_liked' ? 'text-custom-orange' : 'text-custom-lightGray'
-            )}
-          >
-            <i data-feather="thumbs-up" className="w-4 h-4" />
-            <span>Most Liked</span>
-          </Link>
-          <Link
-            href="/?filter=most_disliked"
-            className={cn(
-              "flex items-center space-x-2 px-4 py-2 text-sm hover:text-custom-orange transition-colors",
-              current_filter === 'most_disliked' ? 'text-custom-orange' : 'text-custom-lightGray'
-            )}
-          >
-            <i data-feather="thumbs-down" className="w-4 h-4" />
-            <span>Most Disliked</span>
-          </Link>
-          {current_filter && (
-            <Link
-              href="/"
-              className="flex items-center space-x-2 px-4 py-2 text-sm text-custom-lightGray hover:text-custom-orange transition-colors"
-            >
-              <i data-feather="x" className="w-4 h-4" />
-              <span>Clear Filter</span>
-            </Link>
-          )}
-        </div>
-
-        {/* Posts List */}
-        <div className="space-y-6">
-          {posts.data.map(post => (
-            <Card key={post.id} className="bg-custom-darkGray border-custom-orange">
-              <CardHeader className="flex flex-row items-center space-x-3 space-y-0">
-                <Avatar>
-                  <AvatarImage 
-                    src={post.user?.avatar ? `/uploads/${post.user.avatar}` : '/uploads/votri.jpg'} 
-                    alt={post.user?.username || 'User'}
-                  />
-                  <AvatarFallback>{post.user?.username?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <h3 className="font-semibold">{post.user?.username || 'Unknown User'}</h3>
-                  <p className="text-sm text-custom-lightGray">
-                    {new Date(post.created_at).toLocaleString()}
-                  </p>
+  if (loading) {
+    return (
+      <div className="flex-grow p-8 space-y-6">
+        <Skeleton className="h-12 w-48" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="bg-custom-darkGray border-none">
+              <CardHeader>
+                <div className="flex items-center space-x-4">
+                  <Skeleton className="h-12 w-12 rounded-full" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-32" />
+                  </div>
                 </div>
               </CardHeader>
-              
-              <CardContent className="space-y-4">
-                <h2 className="text-xl font-bold">{post.title}</h2>
-                <p className="text-custom-lightGray whitespace-pre-line">{post.content}</p>
-                
-                {post.image && (
-                  <img
-                    src={`/uploads/${post.image}`}
-                    alt="Post"
-                    className="w-full object-cover max-h-96 rounded-lg"
-                  />
-                )}
-                
-                {/* Module Tags */}
-                {post.modules && post.modules.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {post.modules.map(module => (
-                      <Badge key={module.id} variant="outline" className="bg-custom-mediumGray border-custom-orange">
-                        #{module.name}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
+              <CardContent>
+                <Skeleton className="h-6 w-3/4 mb-4" />
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-2/3" />
               </CardContent>
-              
-              <CardFooter className="flex items-center justify-between border-t border-custom-mediumGray py-3">
-                <div className="flex items-center space-x-6">
-                  <button className="flex items-center space-x-2 text-custom-lightGray hover:text-custom-orange transition">
-                    <i data-feather="eye" className="w-5 h-5" />
-                    <span>{post.view_count} views</span>
-                  </button>
-                  
-                  <button 
-                    onClick={() => handleLikeDislike(post.id, 'like')}
-                    className={cn(
-                      "flex items-center space-x-2 hover:text-custom-orange transition",
-                      isLiked(post) ? 'text-blue-500' : 'text-custom-lightGray'
-                    )}
-                  >
-                    <i data-feather="thumbs-up" className="w-5 h-5" />
-                    <span>{post.like_count} likes</span>
-                  </button>
-                  
-                  <button 
-                    onClick={() => handleLikeDislike(post.id, 'dislike')}
-                    className={cn(
-                      "flex items-center space-x-2 hover:text-custom-orange transition",
-                      isDisliked(post) ? 'text-red-500' : 'text-custom-lightGray'
-                    )}
-                  >
-                    <i data-feather="thumbs-down" className="w-5 h-5" />
-                    <span>{post.dislike_count} dislikes</span>
-                  </button>
-                  
-                  <button className="flex items-center space-x-2 text-custom-lightGray hover:text-custom-orange transition">
-                    <i data-feather="share-2" className="w-5 h-5" />
-                    <span>Share</span>
-                  </button>
-                </div>
-              </CardFooter>
-              
-              {/* Comments Section */}
-              <div className="px-6 pb-6">
-                <h4 className="font-semibold text-sm text-gray-300 mb-2">Comments:</h4>
-                
-                {(comments[post.id] || post.comments)?.length === 0 ? (
-                  <p className="text-gray-500">No comments</p>
-                ) : (
-                  <ScrollArea className="h-64 rounded-md border border-custom-mediumGray p-4">
-                    {(comments[post.id] || post.comments)?.map(comment => (
-                      <div key={comment.id} className="ml-4 mb-4">
-                        <div className="flex items-center mb-1">
-                          <Avatar className="h-8 w-8 mr-2">
-                            <AvatarImage 
-                              src={comment.user?.avatar ? `/uploads/${comment.user.avatar}` : '/uploads/votri.jpg'} 
-                              alt={comment.user?.username || 'User'}
-                            />
-                            <AvatarFallback>{comment.user?.username?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
-                          </Avatar>
-                          <strong className="text-sm">{comment.user?.username || 'Unknown User'}</strong>
-                          <span className="ml-2 text-xs text-custom-lightGray">
-                            {new Date(comment.created_at).toLocaleString()}
-                          </span>
-                          
-                          {user?.id === comment.user_id && (
-                            <div className="ml-auto flex space-x-2">
-                              <button 
-                                onClick={() => setEditingComment({ 
-                                  id: comment.id, 
-                                  postId: post.id, 
-                                  content: comment.content 
-                                })}
-                                className="text-custom-lightGray hover:text-custom-orange"
-                              >
-                                <i data-feather="edit" className="w-4 h-4" />
-                              </button>
-                              <button 
-                                onClick={() => handleDeleteComment(comment.id, post.id)}
-                                className="text-custom-lightGray hover:text-custom-orange"
-                              >
-                                <i data-feather="trash" className="w-4 h-4" />
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                        <p className="text-sm text-gray-300 whitespace-pre-line">{comment.content}</p>
-                        {comment.image && (
-                          <img 
-                            src={`/uploads/${comment.image}`} 
-                            alt="Comment" 
-                            className="mt-2 max-h-40 rounded"
-                          />
-                        )}
-                      </div>
-                    ))}
-                  </ScrollArea>
-                )}
-                
-                {user && (
-                  <div className="mt-4 flex items-center space-x-2">
-                    <Input
-                      type="text"
-                      value={newComments[post.id] || ''}
-                      onChange={(e) => setNewComments(prev => ({ ...prev, [post.id]: e.target.value }))}
-                      placeholder="Write a comment..."
-                      className="flex-grow bg-custom-black border-custom-mediumGray text-white"
-                    />
-                    <input
-                      type="file"
-                      id={`comment-image-${post.id}`}
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => setCommentImages(prev => ({ 
-                        ...prev, 
-                        [post.id]: e.target.files?.[0] || null 
-                      }))}
-                    />
-                    <label 
-                      htmlFor={`comment-image-${post.id}`}
-                      className="text-custom-lightGray hover:text-custom-orange cursor-pointer p-2"
-                    >
-                      <i data-feather="image" className="w-5 h-5" />
-                    </label>
-                    <button
-                      onClick={() => handleAddComment(post.id)}
-                      className="text-custom-lightGray hover:text-custom-orange p-2"
-                    >
-                      <i data-feather="send" className="w-5 h-5" />
-                    </button>
-                  </div>
-                )}
-              </div>
             </Card>
           ))}
         </div>
-
-        {/* Pagination */}
-        {posts.meta.last_page > 1 && (
-          <nav className="flex justify-center items-center space-x-2 mt-6">
-            {posts.meta.current_page > 1 && (
-              <>
-                <Link
-                  href="/?page=1"
-                  className="px-4 py-2 bg-custom-darkGray text-white rounded-md hover:bg-custom-orange transition-colors"
-                >
-                  First
-                </Link>
-                <Link
-                  href={`/?page=${posts.meta.current_page - 1}`}
-                  className="px-4 py-2 bg-custom-darkGray text-white rounded-md hover:bg-custom-orange transition-colors"
-                >
-                  Previous
-                </Link>
-              </>
-            )}
-
-            {Array.from({ length: posts.meta.last_page }, (_, i) => i + 1).map(page => (
-              <Link
-                key={page}
-                href={`/?page=${page}`}
-                className={cn(
-                  "px-4 py-2 rounded-md transition-colors",
-                  page === posts.meta.current_page
-                    ? "bg-custom-orange text-white"
-                    : "bg-custom-darkGray text-custom-lightGray hover:bg-custom-mediumGray"
-                )}
-              >
-                {page}
-              </Link>
-            ))}
-
-            {posts.meta.current_page < posts.meta.last_page && (
-              <>
-                <Link
-                  href={`/?page=${posts.meta.current_page + 1}`}
-                  className="px-4 py-2 bg-custom-darkGray text-white rounded-md hover:bg-custom-orange transition-colors"
-                >
-                  Next
-                </Link>
-                <Link
-                  href={`/?page=${posts.meta.last_page}`}
-                  className="px-4 py-2 bg-custom-darkGray text-white rounded-md hover:bg-custom-orange transition-colors"
-                >
-                  Last
-                </Link>
-              </>
-            )}
-          </nav>
-        )}
       </div>
+    )
+  }
 
-      {/* Create Post Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-custom-darkGray rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-custom-orange">Create New Post</h2>
-              <button 
-                onClick={() => setShowCreateModal(false)}
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                <i data-feather="x" className="w-6 h-6" />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-white mb-2">Title *</label>
+  return (
+    <Layout>
+      <Head title="Posts" />
+      <main className="flex-grow p-8 space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-4xl font-bold text-custom-orange">Posts</h1>
+          <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+            <DialogTrigger asChild>
+              <Button className="bg-custom-orange hover:bg-custom-orange/90">
+                <Plus className="w-4 h-4 mr-2" />
+                Create Post
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="bg-custom-darkGray border-none">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold text-white">Create New Post</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
                 <Input
-                  type="text"
+                  placeholder="Title"
                   value={newPost.title}
                   onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
-                  placeholder="Enter title"
-                  className="w-full bg-custom-mediumGray border-custom-mediumGray text-white"
+                  className="bg-custom-gray border-none text-white"
                 />
-              </div>
-
-              <div>
-                <label className="block text-white mb-2">Content *</label>
                 <Textarea
+                  placeholder="Content"
                   value={newPost.content}
                   onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
-                  placeholder="Enter description"
-                  rows={6}
-                  className="w-full bg-custom-mediumGray border-custom-mediumGray text-white"
+                  className="bg-custom-gray border-none text-white min-h-[200px]"
                 />
-              </div>
-
-              <div>
-                <label className="block text-white mb-2">Image</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setNewPost({ ...newPost, image: e.target.files?.[0] || null })}
-                  className="w-full p-3 bg-custom-mediumGray border border-custom-mediumGray text-white rounded-lg file:mr-4 file:rounded-full file:border-0 file:bg-custom-orange file:text-black file:px-4 file:py-2 hover:file:bg-custom-orange-dark"
-                />
-              </div>
-
-              <div>
-                <label className="block text-white mb-2">Modules</label>
-                <div className="relative">
-                  <Input
-                    type="text"
-                    value={moduleSearch}
-                    onChange={(e) => {
-                      setModuleSearch(e.target.value)
-                      if (e.target.value.startsWith('#')) {
-                        setModuleDropdownVisible(true)
-                      } else {
-                        setModuleDropdownVisible(false)
-                      }
-                    }}
-                    placeholder="Type # to select modules"
-                    className="w-full bg-custom-mediumGray border-custom-mediumGray text-white"
-                  />
-
-                  {/* Selected Modules */}
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {selectedModules.map(module => (
-                      <Badge key={module.id} className="flex items-center bg-custom-orange text-black">
-                        #{module.name}
-                        <button 
-                          type="button" 
-                          onClick={() => removeModule(module.id)}
-                          className="ml-2 text-black hover:text-white"
-                        >
-                          ×
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
-
-                  {/* Module Dropdown */}
-                  {moduleDropdownVisible && (
-                    <div className="absolute z-10 w-full bg-custom-mediumGray border border-custom-mediumGray rounded-lg mt-1 max-h-60 overflow-y-auto">
-                      {/* In a real app, you would fetch modules based on search */}
-                      <div 
-                        className="px-4 py-2 hover:bg-custom-orange cursor-pointer"
-                        onClick={() => addModule({ id: 1, name: 'Web Programming' })}
-                      >
-                        #Web Programming
-                      </div>
-                      <div 
-                        className="px-4 py-2 hover:bg-custom-orange cursor-pointer"
-                        onClick={() => addModule({ id: 2, name: 'Database' })}
-                      >
-                        #Database
-                      </div>
-                      <div 
-                        className="px-4 py-2 hover:bg-custom-orange cursor-pointer"
-                        onClick={() => addModule({ id: 3, name: 'Information Security' })}
-                      >
-                        #Information Security
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex justify-end pt-4">
                 <Button
                   onClick={handleCreatePost}
-                  className="bg-custom-orange hover:bg-custom-orange-dark text-black"
+                  className="w-full bg-custom-orange hover:bg-custom-orange/90"
                 >
-                  Post
+                  Create Post
                 </Button>
               </div>
-            </div>
-          </div>
+            </DialogContent>
+          </Dialog>
         </div>
-      )}
 
-      {/* Edit Comment Modal */}
-      {editingComment.id && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-custom-darkGray rounded-lg p-6 w-full max-w-2xl">
-            <h2 className="text-2xl font-bold text-custom-orange mb-4">Edit Comment</h2>
-            <Textarea
-              value={editingComment.content}
-              onChange={(e) => setEditingComment({ ...editingComment, content: e.target.value })}
-              rows={4}
-              className="w-full bg-custom-mediumGray border-custom-mediumGray text-white mb-4"
-            />
-            <div className="flex justify-end space-x-2">
-              <Button
-                variant="outline"
-                onClick={() => setEditingComment({ id: null, postId: null, content: '' })}
-                className="text-white border-custom-mediumGray hover:bg-custom-mediumGray"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleEditComment}
-                className="bg-custom-orange hover:bg-custom-orange-dark text-black"
-              >
-                Update
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+        <Tabs defaultValue={current_filter || 'all'} className="w-full">
+          <TabsList className="bg-custom-darkGray">
+            <TabsTrigger value="all">All Posts</TabsTrigger>
+            <TabsTrigger value="my-posts">My Posts</TabsTrigger>
+            <TabsTrigger value="liked">Liked Posts</TabsTrigger>
+          </TabsList>
+          <TabsContent value="all" className="mt-6">
+            <ScrollArea className="h-[calc(100vh-300px)]">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
+                {posts.data.map((post) => (
+                  <Card key={post.id} className="bg-custom-darkGray border-none">
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center space-x-4">
+                          <Avatar>
+                            <AvatarImage src={post.user.avatar} />
+                            <AvatarFallback>{post.user.username[0].toUpperCase()}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <h3 className="font-semibold text-white">{post.user.username}</h3>
+                            <p className="text-sm text-custom-lightGray">
+                              {new Date(post.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="bg-custom-darkGray border-none">
+                            <DropdownMenuItem className="text-white">
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-red-500">
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <h2 className="text-xl font-bold text-white mb-2">{post.title}</h2>
+                      <p className="text-custom-lightGray">{post.content}</p>
+                      {post.modules && post.modules.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-4">
+                          {post.modules.map((module) => (
+                            <Badge key={module.id} variant="secondary" className="bg-custom-orange/20 text-custom-orange">
+                              {module.name}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                    <CardFooter className="flex justify-between">
+                      <div className="flex space-x-4">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleLikeDislike(post.id, 'like')}
+                          className={cn(
+                            'text-custom-lightGray hover:text-custom-orange',
+                            post.liked && 'text-custom-orange'
+                          )}
+                        >
+                          <ThumbsUp className="h-4 w-4 mr-1" />
+                          {post.like_count}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleLikeDislike(post.id, 'dislike')}
+                          className={cn(
+                            'text-custom-lightGray hover:text-red-500',
+                            post.disliked && 'text-red-500'
+                          )}
+                        >
+                          <ThumbsDown className="h-4 w-4 mr-1" />
+                          {post.dislike_count}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-custom-lightGray hover:text-custom-orange"
+                        >
+                          <MessageCircle className="h-4 w-4 mr-1" />
+                          {post.comments.length}
+                        </Button>
+                      </div>
+                      <Badge variant="secondary" className="bg-custom-gray text-custom-lightGray">
+                        {post.view_count} views
+                      </Badge>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            </ScrollArea>
+          </TabsContent>
+          {/* ... other TabsContent components ... */}
+        </Tabs>
+      </main>
+    </Layout>
   )
 }
-
-PostPage.layout = (page: React.ReactNode) => <Layout>{page}</Layout>

@@ -25,4 +25,7 @@ export default defineConfig({
       '@lib': path.resolve(currentDir, './inertia/lib'),
     },
   },
+  optimizeDeps: {
+    include: ['react', 'react-dom'],
+  },
 })

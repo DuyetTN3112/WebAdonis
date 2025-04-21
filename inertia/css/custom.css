@@ -1,0 +1,30 @@
+/* Custom colors */
+.bg-custom-black {
+  background-color: #000000;
+}
+
+.text-custom-orange {
+  color: #FF9900;
+}
+
+.bg-custom-darkGray {
+  background-color: #222222;
+}
+
+.bg-custom-mediumGray {
+  background-color: #333333;
+}
+
+.text-custom-lightGray {
+  color: #CCCCCC;
+}
+
+/* Custom hover effects */
+.hover\:bg-custom-mediumGray:hover {
+  background-color: #333333;
+}
+
+/* Custom focus effects */
+.focus\:ring-custom-orange:focus {
+  --tw-ring-color: #FF9900;
+} 
