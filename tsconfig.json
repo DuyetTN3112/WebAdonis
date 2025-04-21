@@ -2,7 +2,17 @@
   "extends": "@adonisjs/tsconfig/tsconfig.app.json",
   "compilerOptions": {
     "rootDir": "./",
-    "outDir": "./build"
+    "jsx": "react-jsx",   
+    "lib": ["dom", "esnext"],
+    "module": "esnext",   
+    "moduleResolution": "bundler", 
+    "types": ["vite/client"],   
+    "outDir": "./build",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["inertia/*"],
+      "@lib/*": ["inertia/lib/*"]
+    }
   },
   "exclude": ["./inertia/**/*", "node_modules", "build"]
 }

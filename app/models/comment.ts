@@ -5,6 +5,7 @@ import User from '#models/user'
 import Post from '#models/post'
 
 export default class Comment extends BaseModel {
+  public static table = 'comment'
   @column({ isPrimary: true })
   declare public id: number
 

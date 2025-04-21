@@ -1,12 +1,18 @@
 {
   "extends": "@adonisjs/tsconfig/tsconfig.client.json",
   "compilerOptions": {
-    "baseUrl": ".",
+    "baseUrl": ".", // Gốc là thư mục inertia
     "module": "ESNext",
     "jsx": "react-jsx",
     "paths": {
       "~/*": ["./*"],
-    },
+
+      "@/components/*": ["pages/components/*"],
+      "@/components/ui/*": ["pages/components/ui/*"],
+      "@/lib/*": ["lib/*"],
+      "@/lib/utils": ["lib/utils.ts"],
+      "@/hooks/*": ["hooks/*"]
+    }
   },
-  "include": ["./**/*.ts", "./**/*.tsx"],
+  "include": ["./**/*.ts", "./**/*.tsx", "../vite.config.ts"]
 }

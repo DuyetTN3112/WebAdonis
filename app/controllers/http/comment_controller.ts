@@ -29,7 +29,7 @@ export default class CommentsController {
    * Hiển thị form tạo comment (nếu cần)
    */
   async create({ params, inertia }: HttpContext) {
-    const post = await Post.findOrFail(params.postId)
+    const post = await Post.findOrFail(params.post_id)
     return inertia.render('comments/create', { post: post.serialize() })
   }
 
@@ -39,7 +39,7 @@ export default class CommentsController {
   @inject()
   async store({ auth, request, response, params }: HttpContext & { auth: WebAuthService }) {
     const user = auth.use('web').getUserOrFail()
-    const post = await Post.findOrFail(params.postId)
+    const post = await Post.findOrFail(params.post_id)
     const data = (await request.validateUsing(createCommentValidator)) as CreateCommentData
 
     const comment = await Comment.create({

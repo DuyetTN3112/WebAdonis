@@ -1,23 +1,28 @@
 import { defineConfig } from 'vite'
-// import { getDirname } from '@adonisjs/core/helpers'
+import tailwindcss from '@tailwindcss/vite'
 import inertia from '@adonisjs/inertia/client'
 import react from '@vitejs/plugin-react'
 import adonisjs from '@adonisjs/vite/client'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const currentDir = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
   plugins: [
     inertia({ ssr: { enabled: false } }),
     react(),
+    tailwindcss(),
     adonisjs({ entrypoints: ['inertia/app/app.tsx'], reload: ['inertia/**/*.tsx'] }),
   ],
 
-  /**
-   * Define aliases for importing modules from
-   * your frontend code
-   */
+  css: {
+    postcss: './postcss.config.cjs',
+  },
   resolve: {
     alias: {
-      '@': '/inertia', // Update alias to point to inertia directory
+      '@': path.resolve(currentDir, './inertia'),
+      '@lib': path.resolve(currentDir, './inertia/lib'),
     },
   },
 })

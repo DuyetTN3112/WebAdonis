@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 
 import feather from 'feather-icons'
 
-export default function Home() {
+export default function Post() {
   const [passwordVisible, setPasswordVisible] = useState(false)
   const [showLogin, setShowLogin] = useState(false)
   const [password, setPassword] = useState('')
@@ -48,7 +48,8 @@ export default function Home() {
                   name="password"
                   placeholder="Password"
                   className="w-full p-2 rounded bg-custom-darkGray text-white border border-gray-700"
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => setPassword((e.target as HTMLInputElement).value)}
+
                 />
                 <button type="button" onClick={() => setPasswordVisible(!passwordVisible)} className="absolute right-2 top-2 text-white">
                   <i data-feather={passwordVisible ? 'eye-off' : 'eye'}></i>

@@ -6,16 +6,6 @@ const redisConfig = defineConfig({
   connection: 'main',
 
   connections: {
-    /*
-    |--------------------------------------------------------------------------
-    | The default connection
-    |--------------------------------------------------------------------------
-    |
-    | The main connection you want to use to execute redis commands. The same
-    | connection will be used by the session provider, if you rely on the
-    | redis driver.
-    |
-    */
     main: {
       host: env.get('REDIS_HOST'),
       port: env.get('REDIS_PORT'),

@@ -6,6 +6,7 @@ import Comment from '#models/comment'
 import Module from '#models/module'
 
 export default class Post extends BaseModel {
+  public static table = 'post'
   @column({ isPrimary: true })
   declare public id: number
 
@@ -39,7 +40,9 @@ export default class Post extends BaseModel {
   @belongsTo(() => User)
   declare public user: BelongsTo<typeof User>
 
-  @hasMany(() => Comment)
+  @hasMany(() => Comment, {
+    foreignKey: 'post_id',
+  })
   declare public comments: HasMany<typeof Comment>
 
   @manyToMany(() => Module, {

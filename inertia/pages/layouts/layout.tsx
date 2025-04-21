@@ -5,9 +5,11 @@ export default function MainLayout({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Load feather icons
     import('feather-icons').then((feather) => feather.replace())
+    
   }, [])
 
   return (
+    
     <div className="bg-custom-black text-white min-h-screen flex flex-col">
       {/* Header */}
       <header className="flex items-center justify-between px-4 h-16 bg-custom-darkGray shadow-lg">
@@ -47,7 +49,6 @@ export default function MainLayout({ children }: { children: ReactNode }) {
       <div className="flex flex-1">
         {/* Sidebar */}
         <aside className="w-64 h-full bg-custom-black flex flex-col py-6 space-y-4">
-          <NavLink href="/">Home</NavLink>
           <NavLink href="/users">Users</NavLink>
           <NavLink href="/posts">Posts</NavLink>
           <NavLink href="/modules">Module</NavLink>

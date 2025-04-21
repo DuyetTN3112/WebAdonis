@@ -1,7 +1,6 @@
 import { inject } from '@adonisjs/core'
 import { HttpContext } from '@adonisjs/core/http'
-import User from '#models/user'
-import { UserRole } from '#models/user'
+import User, { UserRole } from '#models/user'
 import { registerValidator, loginValidator, updateAccountValidator } from '#validators/auth'
 import type { MultipartFile } from '@adonisjs/core/bodyparser'
 import type { AuthService } from '@adonisjs/auth/types'
@@ -50,41 +49,33 @@ export default class AuthController {
   }
 
   @inject()
-  async store({ request, response, auth }: HttpContext & { auth: WebAuthService }) {
-    // Validate request data using VineJS
+  async store({ request, response, auth, session }: HttpContext & { auth: WebAuthService }) {
     const data = (await request.validateUsing(registerValidator)) as RegisterData
 
-    // Check for existing user
     const existingUser = await User.query()
       .where('email', data.email)
       .orWhere('student_id', data.student_id)
       .first()
 
     if (existingUser) {
-      return response
-        .redirect()
-        .back()
-        .withErrors({
-          email: existingUser.email === data.email ? 'Email đã tồn tại' : null,
-          student_id:
-            existingUser.student_id === data.student_id ? 'Mã sinh viên đã tồn tại' : null,
-        })
+      session.flash('errors', {
+        email: existingUser.email === data.email ? 'Email đã tồn tại' : '',
+        student_id: existingUser.student_id === data.student_id ? 'Mã sinh viên đã tồn tại' : '',
+      })
+      return response.redirect().back()
     }
 
-    // Create user with default role as USER
     const user = await User.create({
       ...data,
       role: UserRole.USER,
     })
 
     await auth.use('web').login(user)
-
-    return response.redirect().toRoute('home')
+    return response.redirect().toRoute('post')
   }
 
   @inject()
-  async authenticate({ request, response, auth }: HttpContext & { auth: WebAuthService }) {
-    // Validate login data
+  async authenticate({ request, response, auth, session }: HttpContext & { auth: WebAuthService }) {
     const { email, password } = (await request.validateUsing(loginValidator)) as LoginData
 
     try {
@@ -93,11 +84,13 @@ export default class AuthController {
       if (!user) {
         throw new Error('User not found')
       }
-      return response.redirect().toRoute(user.role === UserRole.ADMIN ? 'admin.dashboard' : 'home')
+
+      return response.redirect().toRoute(user.role === UserRole.ADMIN ? 'admin.dashboard' : 'post')
     } catch {
-      return response.redirect().back().withErrors({
+      session.flash('errors', {
         email: 'Thông tin đăng nhập không chính xác',
       })
+      return response.redirect().back()
     }
   }
 
@@ -108,9 +101,13 @@ export default class AuthController {
   }
 
   @inject()
-  async updateProfile({ request, response, auth }: HttpContext & { auth: WebAuthService }) {
+  async updateProfile({
+    request,
+    response,
+    auth,
+    session,
+  }: HttpContext & { auth: WebAuthService }) {
     const user = auth.use('web').getUserOrFail()
-    // Validate update data
     const data = (await request.validateUsing(updateAccountValidator)) as UpdateAccountData
 
     try {
@@ -120,11 +117,14 @@ export default class AuthController {
         current_password: data.current_password,
         new_password: data.new_password,
       }
+
       await user.merge(updateData).save()
 
-      return response.redirect().back().withSuccess('Cập nhật thông tin thành công')
+      session.flash('success', 'Cập nhật thông tin thành công')
+      return response.redirect().back()
     } catch (error) {
-      return response.redirect().back().withErrors({ error: 'Không thể cập nhật thông tin' })
+      session.flash('errors', { error: 'Không thể cập nhật thông tin' })
+      return response.redirect().back()
     }
   }
 

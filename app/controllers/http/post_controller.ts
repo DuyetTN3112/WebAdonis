@@ -14,13 +14,13 @@ interface WebAuthService extends AuthService {
 
 export default class PostsController {
   @inject()
-  async index({ inertia, request, response }: HttpContext) {
+  async index({ inertia, request, response, auth }: HttpContext & { auth: WebAuthService }) {
     try {
       const page = Math.max(Number.parseInt(request.input('page', '1')) || 1, 1)
       const filter = request.input('filter')
       const limit = 3
 
-      const postsQuery = Post.query().orderBy('created_at', 'desc')
+      const postsQuery = Post.query().preload('comments').orderBy('created_at', 'desc')
 
       if (filter) {
         postsQuery.where('category', filter)
@@ -28,15 +28,18 @@ export default class PostsController {
 
       const posts = await postsQuery.paginate(page, limit)
 
-      return inertia.render('posts/index', {
+      const user = auth.use('web').user // 👈 đây là phần bị thiếu gây lỗi
+      return inertia.render('post', {
         posts: posts.serialize(),
+        user: user ? user.serialize() : null,
         meta: posts.getMeta(),
         currentFilter: filter,
         pageTitle: 'Posts',
         pagination: posts.toJSON().meta,
       })
     } catch (error) {
-      response.status(500).send('Error loading posts')
+      console.error(error)
+      return response.status(500).json({ message: 'Lỗi tải bài viết', error })
     }
   }
 
