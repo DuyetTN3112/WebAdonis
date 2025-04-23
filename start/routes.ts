@@ -9,3 +9,4 @@ router.get('/posts', [() => import('#controllers/http/post_controller'), 'index'
 // API routes for data fetching
 router.get('/api/modules', [() => import('#controllers/http/module_controller'), 'getModules'])
 router.get('/api/modules/:id/posts', [() => import('#controllers/http/module_controller'), 'getPosts'])
+router.get('/search', '#controllers/search_controller.handle')

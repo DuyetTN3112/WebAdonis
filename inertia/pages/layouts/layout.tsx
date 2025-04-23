@@ -1,137 +1,84 @@
 import { ReactNode, useEffect } from 'react'
 import { Link } from '@inertiajs/react'
 import { Button } from '../../components/ui/button'
-import { Input } from '../../components/ui/input'
-import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/avatar'
-import { Badge } from '../../components/ui/badge'
-import { Card, CardHeader, CardContent, CardFooter } from '../../components/ui/card'
-import { ScrollArea } from '../../components/ui/scroll-area'
 import { Separator } from '../../components/ui/separator'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../components/ui/tooltip'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../components/ui/dropdown-menu'
-import { Search, Grid, Bell, User, LogOut, Settings, HelpCircle, MessageSquare } from 'lucide-react'
+import { Grid, Bell, User, LogOut, HelpCircle, MessageSquare } from 'lucide-react'
+import SearchInput from '../../components/search/search_input'
 
 export default function MainLayout({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Load feather icons
     import('feather-icons').then((feather) => feather.replace())
-    
   }, [])
 
   return (
-    <div className="bg-custom-black text-white min-h-screen flex flex-col">
+    <div className="min-h-screen bg-black text-white">
       {/* Header */}
-      <Card className="flex items-center justify-between px-4 h-16 bg-custom-darkGray border-none rounded-none">
+      <header className="flex items-center justify-between px-4 h-16 bg-custom-darkGray shadow-lg">
         <div>
-          <span className="text-white text-5xl font-bold">
-            Forum<span className="text-custom-orange">GW</span>
+          <span className="text-white text-[60px] font-bold">
+            Forum<span className="text-[#FF9900]">GW</span>
           </span>
         </div>
 
-        {/* Search Bar */}
-        <div className="relative flex-grow max-w-2xl mx-auto">
-          <Input
-            type="text"
-            placeholder="Search on ForumGW"
-            className="w-full py-2 px-4 pl-10 bg-custom-black text-white rounded-full focus:outline-none focus:ring-2 focus:ring-custom-orange text-lg"
-          />
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-custom-orange w-5 h-5" />
-        </div>
+        <SearchInput />
 
-        {/* Icons */}
+        {/* User Menu */}
         <div className="flex items-center space-x-4">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full bg-custom-darkGray hover:bg-custom-mediumGray">
-                  <Grid className="text-custom-orange" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>View all modules</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full bg-custom-darkGray hover:bg-custom-mediumGray relative">
-                  <Bell className="text-custom-orange" />
-                  <Badge variant="secondary" className="absolute -top-1 -right-1 bg-custom-orange">0</Badge>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Notifications</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Avatar className="h-10 w-10 cursor-pointer">
-                <AvatarImage src="" alt="User" />
-                <AvatarFallback className="bg-custom-darkGray">
-                  <User className="text-custom-orange" />
-                </AvatarFallback>
-              </Avatar>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-custom-darkGray border-custom-gray">
-              <DropdownMenuItem className="text-white hover:bg-custom-mediumGray">
-                <User className="mr-2 h-4 w-4 text-custom-orange" />
-                <span>Profile</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="text-white hover:bg-custom-mediumGray">
-                <Settings className="mr-2 h-4 w-4 text-custom-orange" />
-                <span>Settings</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="text-white hover:bg-custom-mediumGray">
-                <HelpCircle className="mr-2 h-4 w-4 text-custom-orange" />
-                <span>Help</span>
-              </DropdownMenuItem>
-              <Separator className="bg-custom-gray" />
-              <DropdownMenuItem className="text-white hover:bg-custom-mediumGray">
-                <LogOut className="mr-2 h-4 w-4 text-custom-orange" />
-                <span>Logout</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button variant="ghost" size="icon" className="rounded-full bg-[#222222] hover:bg-[#333333]">
+            <Grid className="text-[#FF9900] h-5 w-5" />
+          </Button>
+          <div className="relative">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full bg-[#222222] hover:bg-[#333333]"
+            >
+              <Bell className="text-[#FF9900] h-5 w-5" />
+              <span className="absolute top-0 right-0 bg-[#FF9900] text-black rounded-full px-1.5 py-0.5 text-xs font-bold">
+                0
+              </span>
+            </Button>
+          </div>
+          <Button variant="ghost" size="icon" className="rounded-full bg-[#222222] hover:bg-[#333333]" asChild>
+            <Link href="/user">
+              <User className="text-[#FF9900] h-5 w-5" />
+            </Link>
+          </Button>
         </div>
-      </Card>
+      </header>
 
       {/* Content Area */}
-      <div className="flex flex-1">
+      <div className="flex">
         {/* Sidebar */}
-        <Card className="w-64 h-full bg-custom-black border-none rounded-none flex flex-col py-6">
-          <ScrollArea className="h-full">
-            <div className="space-y-4">
-              <NavLink href="/users" icon={<User className="mr-2 h-4 w-4" />}>Users</NavLink>
-              <NavLink href="/posts" icon={<MessageSquare className="mr-2 h-4 w-4" />}>Posts</NavLink>
-              <NavLink href="/modules" icon={<Grid className="mr-2 h-4 w-4" />}>Module</NavLink>
-              <NavLink href="/feedback" icon={<HelpCircle className="mr-2 h-4 w-4" />}>Feedback</NavLink>
-              <Separator className="bg-custom-gray my-4" />
-              <NavLink href="/logout" icon={<LogOut className="mr-2 h-4 w-4" />}>Logout</NavLink>
-            </div>
-          </ScrollArea>
-        </Card>
+        <aside className="w-[190px] h-[calc(200vh-5rem)] bg-black flex flex-col items-start py-6">
+          <div className="flex flex-col gap-[15px] w-full">
+            <NavLink href="/users" icon={<User className="text-[#FF9900] w-5 h-10" />}>Users</NavLink>
+            <NavLink href="/posts" icon={<MessageSquare className="text-[#FF9900] w-5 h-5" />}>Posts</NavLink>
+            <NavLink href="/modules" icon={<Grid className="text-[#FF9900] w-5 h-5" />}>Module</NavLink>
+            <NavLink href="/feedback" icon={<HelpCircle className="text-[#FF9900] w-5 h-5" />}>Feedback</NavLink>
+            <NavLink href="/logout" icon={<LogOut className="text-[#FF9900] w-5 h-5" />}>Logout</NavLink>
+            <Separator className="bg-gray-600 my-2" />
+          </div>
+        </aside>
 
         {/* Main Page Content */}
-        <main className="flex-1 p-8 bg-custom-black">{children}</main>
+        <main className="flex-1 p-8 bg-black">{children}</main>
       </div>
     </div>
   )
 }
+
 function NavLink({ href, children, icon }: { href: string; children: ReactNode; icon?: ReactNode }) {
   return (
     <Link href={href}>
       <Button
         variant="ghost"
-        className="w-48 ml-4 justify-start text-sm hover:bg-custom-orange"
+        className="w-full h-[38px] justify-start text-white bg-[#333333] hover:bg-gray-800 hover:text-white px-4 py-2"
       >
-        {icon}
+        <span className="mr-3">{icon}</span>
         {children}
       </Button>
     </Link>
   )
 }
-

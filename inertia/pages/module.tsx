@@ -1,21 +1,7 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
-import { Button } from "../components/ui/button";
-import { Alert, AlertDescription, AlertTitle } from "../components/ui/alert";
-import { ScrollArea } from "../components/ui/scroll-area";
-import { Skeleton } from "../components/ui/skeleton";
-import { Badge } from "../components/ui/badge";
 import Layout from './layouts/layout';
-
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  avatar?: string;
-  role: number;
-}
 
 interface Module {
   id: number;
@@ -26,117 +12,112 @@ interface Module {
 }
 
 interface ModuleProps {
-  user: User | null;
   modules: Module[];
-  error?: string;
 }
 
-const ModulePage = ({ user, modules: initialModules, error: initialError }: ModuleProps) => {
-  const [modules, setModules] = useState<Module[]>(initialModules);
+const ModulePage = ({ modules }: ModuleProps) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(initialError || null);
-
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-  };
+  const [selectedModuleId, setSelectedModuleId] = useState<number | null>(null);
+  const [selectedModulePosts, setSelectedModulePosts] = useState<any[]>([]);
 
   const filteredModules = modules.filter(module =>
     module.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    module.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    module.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (loading) {
-    return (
-      <Layout>
-        <div className="flex-grow p-8 space-y-6">
-          <Skeleton className="h-12 w-48" />
-          <Skeleton className="h-6 w-96" />
-          <div className="relative my-6 max-w-2xl">
-            <Skeleton className="h-10 w-full" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-            {[1, 2, 3, 4].map((i) => (
-              <Card key={i} className="bg-custom-darkGray border-none">
-                <CardHeader>
-                  <Skeleton className="h-6 w-3/4" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-4 w-full mb-2" />
-                  <Skeleton className="h-4 w-2/3" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </Layout>
-    );
-  }
-
-  if (error) {
-    return (
-      <Layout>
-        <div className="flex-grow p-8">
-          <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        </div>
-      </Layout>
-    );
-  }
+  const handleModuleClick = async (moduleId: number) => {
+    setSelectedModuleId(moduleId);
+    const mockPosts = [
+      {
+        title: "Sample Post Title",
+        content: "This is a sample post content for the selected module.",
+        author: "John Doe",
+        created_at: new Date().toISOString(),
+        module_names: modules.find(m => m.id === moduleId)?.name || ""
+      }
+    ];
+    setSelectedModulePosts(mockPosts);
+  };
 
   return (
     <Layout>
-      <main className="flex-grow p-8 space-y-6">
+    <div className="min-h-screen bg-custom-black text-white">
+      <main className="container mx-auto p-8 space-y-6">
         <h1 className="text-4xl font-bold text-custom-orange">Modules</h1>
-        <h2 className="text-xl text-custom-lightGray">
-          A hashtag is a keyword or label that categorizes your post with other, similar posts. 
-          Using the right hashtags makes it easier for others to find and answer your post.
+          <h2 className="text-xl text-custom-lightGray max-w-4xl">
+          A hashtag is a keyword or label that categorizes your post with other, similar posts. Using the right hashtags
+          makes it easier for others to find and answer your post.
         </h2>
 
-        {/* Module Search Bar */}
         <div className="relative my-6 max-w-2xl">
           <Input
+            id="searchModules"
             type="text"
             placeholder="Search modules"
             value={searchQuery}
-            onChange={handleSearch}
-            className="w-full py-2 px-4 pl-10 bg-custom-darkGray text-white rounded-full focus:outline-none focus:ring-2 focus:ring-custom-orange text-lg"
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={(e) => e.target.placeholder = ''}
+            onBlur={(e) => e.target.placeholder = 'Search modules'}            
           />
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-custom-orange w-5 h-5" />
         </div>
-
+    
         {/* Modules Grid */}
-        <ScrollArea className="h-[calc(100vh-300px)]">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 p-4">
-            {filteredModules.map((module) => (
-              <Card key={module.id} className="bg-custom-darkGray border-none hover:bg-custom-gray transition-colors">
-                <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="text-xl font-semibold text-white">{module.name}</CardTitle>
-                    {module.posts_count !== undefined && (
-                      <Badge variant="secondary" className="bg-custom-orange/20 text-custom-orange">
-                        {module.posts_count} posts
-                      </Badge>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-custom-lightGray">{module.description}</p>
-                  <div className="mt-4">
-                    <small className="text-custom-lightGray">
-                      Created at: {new Date(module.created_at).toLocaleDateString()}
-                    </small>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredModules.map((module) => (
+            <div key={module.id} className="w-full">
+              <button
+                onClick={() => handleModuleClick(module.id)}
+                className={`w-full h-full text-left p-4 flex flex-col justify-between 
+                  ${selectedModuleId === module.id ? 'border-2 border-[#FF9900]' : 'border border-[#FF9900]'}
+                  bg-black! text-white! rounded-lg cursor-pointer transition-transform hover:scale-105`}
+                style={{ backgroundColor: 'black', color: 'white', height: '220px' }}
+              >
+                <div>
+                  <h5 className="text-xl font-bold mb-2 text-white!">{module.name}</h5>
+                  <p className="text-sm text-white!">{module.description}</p>
+                </div>
+                <div className="text-xs text-gray-300!">
+                  <small>Created at: {new Date(module.created_at).toLocaleDateString()}</small>
+                  {module.posts_count !== undefined && (
+                    <div className="mt-1">{module.posts_count} posts</div>
+                  )}
+                </div>
+              </button>
+            </div>
+          ))}
+        </div>
+
+
+        {selectedModuleId && selectedModulePosts.length > 0 && (
+          <div className="user-posts mt-12">
+            <h3 className="text-3xl font-bold text-[#FF9900] mb-6">Posts in Selected Module</h3>
+            <div className="posts-list space-y-4">
+              {selectedModulePosts.map((post, index) => (
+                <div key={index} className="post-item bg-black p-4 rounded-lg border border-[#FF9900] text-white">
+                  <h4 className="text-xl font-semibold">{post.title}</h4>
+                  <p className="post-content mt-2">{post.content}</p>
+                  <small className="text-gray-300 block mt-2">
+                    Posted by: {post.author} 
+                    on {new Date(post.created_at).toLocaleDateString()}
+                    in Modules: {post.module_names}
+                  </small>
+                </div>
+              ))}
+            </div>
           </div>
-        </ScrollArea>
-      </main>
+        )}
+        
+        {selectedModuleId && selectedModulePosts.length === 0 && (
+          <div className="user-posts mt-12">
+            <h3 className="text-3xl font-bold text-custom-orange mb-6">Posts in Selected Module</h3>
+            <p className="text-custom-lightGray">No posts found in this module.</p>
+          </div>
+        )}
+        </main>
+      </div>
     </Layout>
   );
 };
 
-export default ModulePage; 
+export default ModulePage;

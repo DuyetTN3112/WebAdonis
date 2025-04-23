@@ -14,8 +14,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../components/ui/dropdown-menu'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { Skeleton } from '../components/ui/skeleton'
-import { MoreVertical, ThumbsUp, ThumbsDown, MessageCircle, Edit, Trash2, Plus } from 'lucide-react'
+import { MoreVertical, ThumbsUp, ThumbsDown, MessageCircle, Edit, Trash2, Plus, Eye, Share2, Send, Image as ImageIcon, X } from 'lucide-react'
 
+// Interfaces remain unchanged
 interface User {
   id: number
   username: string
@@ -143,13 +144,11 @@ export default function PostPage({ user, posts, current_filter }: PostProps) {
 
       const data = await response.json()
 
-      // Update comments for the post
       setComments(prev => ({
         ...prev,
         [postId]: [...(prev[postId] || []), data.comment]
       }))
 
-      // Clear the comment input
       setNewComments(prev => ({ ...prev, [postId]: '' }))
       setCommentImages(prev => ({ ...prev, [postId]: null }))
     } catch (error) {
@@ -172,7 +171,6 @@ export default function PostPage({ user, posts, current_filter }: PostProps) {
         throw new Error('Network response was not ok')
       }
 
-      // Remove the comment from the state
       setComments(prev => ({
         ...prev,
         [postId]: (prev[postId] || []).filter(c => c.id !== commentId)
@@ -199,9 +197,6 @@ export default function PostPage({ user, posts, current_filter }: PostProps) {
         throw new Error('Network response was not ok')
       }
 
-      // const data = await response.json()
-
-      // Update the comment in the state
       setComments(prev => ({
         ...prev,
         [editingComment.postId!]: (prev[editingComment.postId!] || []).map(c => 
@@ -209,7 +204,6 @@ export default function PostPage({ user, posts, current_filter }: PostProps) {
         )
       }))
 
-      // Reset editing state
       setEditingComment({ id: null, postId: null, content: '' })
     } catch (error) {
       console.error('Error:', error)
@@ -244,10 +238,8 @@ export default function PostPage({ user, posts, current_filter }: PostProps) {
 
       const data = await response.json()
 
-      // Add the new post to the beginning of the list
       posts.data = [data.post, ...posts.data]
 
-      // Reset form
       setNewPost({
         title: '',
         content: '',
@@ -293,9 +285,9 @@ export default function PostPage({ user, posts, current_filter }: PostProps) {
     return (
       <div className="flex-grow p-8 space-y-6">
         <Skeleton className="h-12 w-48" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className="bg-custom-darkGray border-none">
+            <Card key={i} className="bg-[#222222] border-[#333333]">
               <CardHeader>
                 <div className="flex items-center space-x-4">
                   <Skeleton className="h-12 w-12 rounded-full" />
@@ -320,147 +312,383 @@ export default function PostPage({ user, posts, current_filter }: PostProps) {
   return (
     <Layout>
       <Head title="Posts" />
-      <main className="flex-grow p-8 space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-4xl font-bold text-custom-orange">Posts</h1>
+      <main className="flex-1 p-8 bg-black">
+        <div className="container">
+          {/* Create Post Button */}
+          <div className="mb-8">
+            <Card
+              className="bg-[#222222] border-[#333333] hover:border-[#FF9900] transition-colors duration-200 cursor-pointer"
+              onClick={() => setShowCreateModal(true)}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-4">
+                  <Avatar>
+                    <AvatarImage src={user?.avatar || "/uploads/votri.jpg"} alt="User Avatar" />
+                    <AvatarFallback>{user?.username?.charAt(0) || "U"}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-grow bg-black rounded-full px-4 py-2.5 text-[#CCCCCC] hover:bg-gray-900 transition-colors duration-200">
+                    What do you think?
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Create Post Modal */}
           <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-            <DialogTrigger asChild>
-              <Button className="bg-custom-orange hover:bg-custom-orange/90">
-                <Plus className="w-4 h-4 mr-2" />
-                Create Post
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="bg-custom-darkGray border-none">
+            <DialogContent className="bg-[#1E1E1E] text-white border-none max-w-[600px] max-h-[90vh]">
               <DialogHeader>
-                <DialogTitle className="text-2xl font-bold text-white">Create New Post</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <Input
-                  placeholder="Title"
-                  value={newPost.title}
-                  onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
-                  className="bg-custom-gray border-none text-white"
-                />
-                <Textarea
-                  placeholder="Content"
-                  value={newPost.content}
-                  onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
-                  className="bg-custom-gray border-none text-white min-h-[200px]"
-                />
+                <DialogTitle className="text-2xl font-bold text-[#FF6B00]">Create New Post</DialogTitle>
                 <Button
-                  onClick={handleCreatePost}
-                  className="w-full bg-custom-orange hover:bg-custom-orange/90"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-4 top-4 text-gray-400 hover:text-white"
+                  onClick={() => setShowCreateModal(false)}
                 >
-                  Create Post
+                  <X className="h-6 w-6" />
                 </Button>
-              </div>
+              </DialogHeader>
+
+              <form onSubmit={(e) => { e.preventDefault(); handleCreatePost(); }} className="space-y-4">
+                <div>
+                  <label className="block text-white mb-2">Title *</label>
+                  <Input
+                    type="text"
+                    placeholder="Enter title"
+                    required
+                    value={newPost.title}
+                    onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
+                    className="w-full p-3 bg-[#2C2C2C] border border-gray-600 text-white rounded-lg
+                    focus:outline-none focus:border-[#FF6B00] focus:ring-1 focus:ring-[#FF6B00]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white mb-2">Content *</label>
+                  <Textarea
+                    placeholder="Enter description"
+                    rows={6}
+                    required
+                    value={newPost.content}
+                    onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+                    className="w-full p-3 bg-[#2C2C2C] border border-gray-600 text-white rounded-lg
+                    focus:outline-none focus:border-[#FF6B00] focus:ring-1 focus:ring-[#FF6B00]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white mb-2">Image</label>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setNewPost({ ...newPost, image: e.target.files?.[0] || null })}
+                    className="w-full p-3 bg-[#2C2C2C] border border-gray-600 text-white rounded-lg 
+                    file:mr-4 file:rounded-full file:border-0 file:bg-[#FF6B00] file:text-white file:px-4 file:py-2
+                    hover:file:bg-[#FF8533]"
+                  />
+                </div>
+
+                <div className="flex justify-end pt-4">
+                  <Button
+                    type="submit"
+                    className="bg-[#FF6B00] text-white px-6 py-2 rounded-lg hover:bg-[#FF8533] transition-colors duration-300"
+                  >
+                    Post
+                  </Button>
+                </div>
+              </form>
             </DialogContent>
           </Dialog>
+
+          {/* Filter Controls */}
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-white">Posts</h2>
+
+            <div className="flex space-x-4">
+              <Link
+                href="?filter=most_view"
+                className={`flex items-center space-x-2 px-4 py-2 text-sm ${current_filter === "most_view" ? "text-[#FF9900]" : "text-[#CCCCCC] hover:text-[#FF9900]"} transition-colors duration-200 group`}
+              >
+                <Eye
+                  className={`w-4 h-4 ${current_filter === "most_view" ? "text-[#FF9900]" : "group-hover:text-[#FF9900]"}`}
+                />
+                <span>Most View</span>
+              </Link>
+              <Link
+                href="?filter=most_liked"
+                className={`flex items-center space-x-2 px-4 py-2 text-sm ${current_filter === "most_liked" ? "text-[#FF9900]" : "text-[#CCCCCC] hover:text-[#FF9900]"} transition-colors duration-200 group`}
+              >
+                <ThumbsUp
+                  className={`w-4 h-4 ${current_filter === "most_liked" ? "text-[#FF9900]" : "group-hover:text-[#FF9900]"}`}
+                />
+                <span>Most Liked</span>
+              </Link>
+              <Link
+                href="?filter=most_disliked"
+                className={`flex items-center space-x-2 px-4 py-2 text-sm ${current_filter === "most_disliked" ? "text-[#FF9900]" : "text-[#CCCCCC] hover:text-[#FF9900]"} transition-colors duration-200 group`}
+              >
+                <ThumbsDown
+                  className={`w-4 h-4 ${current_filter === "most_disliked" ? "text-[#FF9900]" : "group-hover:text-[#FF9900]"}`}
+                />
+                <span>Most Disliked</span>
+              </Link>
+              {current_filter && (
+                <Link
+                  href="?"
+                  className="flex items-center space-x-2 px-4 py-2 text-sm text-[#CCCCCC] hover:text-[#FF9900] transition-colors duration-200 group"
+                >
+                  <X className="w-4 h-4 group-hover:text-[#FF9900]" />
+                  <span>Clear Filter</span>
+                </Link>
+              )}
+            </div>
+          </div>
+
+          {/* Posts List - Adjusted spacing to 1cm (~space-y-4) */}
+          <div className="space-y-4">
+            {posts.data.map((post) => (
+              <Card
+                key={post.id}
+                className="bg-[#222222] border border-[#FF9900] rounded-lg shadow-md"
+                data-post-id={post.id}
+              >
+                <CardHeader className="pb-2">
+                  <div className="flex items-center">
+                    <Avatar className="w-10 h-10 mr-3">
+                      <AvatarImage
+                        src={post.user.avatar || "/uploads/votri.jpg"}
+                        alt="User Avatar"
+                      />
+                      <AvatarFallback>{post.user.username?.charAt(0) || "U"}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      {/* User name set to white */}
+                      <h3 className="font-bold text-white">{post.user.username}</h3>
+                      <p className="text-sm text-[#CCCCCC]">{new Date(post.created_at).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="space-y-4 pt-2">
+                  {/* Post title set to white */}
+                  <h2 className="text-xl font-bold text-white">{post.title}</h2>
+                  {/* Body text set to white */}
+                  <p className="text-white whitespace-pre-line">{post.content}</p>
+                  {post.image && (
+                    <div className="rounded-lg overflow-hidden">
+                      <img
+                        src={post.image || "/placeholder.svg"}
+                        alt="Post content"
+                        className="w-full object-cover max-h-96"
+                      />
+                    </div>
+                  )}
+
+                  {post.modules && post.modules.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {post.modules.map((module) => (
+                        <Badge key={module.id} variant="outline" className="bg-[#333333] text-white">
+                          #{module.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+
+                <CardFooter className="flex flex-col space-y-4">
+                  {/* Removed border from views, like, dislike, share */}
+                  <div className="flex items-center space-x-6 w-full py-2">
+                    <Button variant="ghost" className="flex items-center space-x-2 text-[#CCCCCC] hover:text-[#FF9900]">
+                      <Eye className="w-5 h-5" />
+                      <span>{post.view_count} views</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className={`flex items-center space-x-2 ${isLiked(post) ? "text-[#FF9900]" : "text-[#CCCCCC] hover:text-[#FF9900]"}`}
+                      onClick={() => handleLikeDislike(post.id, 'like')}
+                    >
+                      <ThumbsUp className="w-5 h-5" />
+                      <span>{post.like_count} likes</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className={`flex items-center space-x-2 ${isDisliked(post) ? "text-red-500" : "text-[#CCCCCC] hover:text-red-500"}`}
+                      onClick={() => handleLikeDislike(post.id, 'dislike')}
+                    >
+                      <ThumbsDown className="w-5 h-5" />
+                      <span>{post.dislike_count} dislikes</span>
+                    </Button>
+                    <Button variant="ghost" className="flex items-center space-x-2 text-[#CCCCCC] hover:text-[#FF9900]">
+                      <Share2 className="w-5 h-5" />
+                      <span>Share</span>
+                    </Button>
+                  </div>
+
+                  {/* Comments Section */}
+                  <div className="w-full">
+                    {/* Comments label set to white */}
+                    <h4 className="font-semibold text-sm text-white mb-2">Comments:</h4>
+
+                    {post.comments && post.comments.length > 0 ? (
+                      <div className="space-y-2">
+                        {post.comments.map((comment) => (
+                          <div key={comment.id} className="ml-8 p-2 bg-[#333333] rounded">
+                            <div className="flex items-center mb-1">
+                              <Avatar className="w-8 h-8 mr-2">
+                                <AvatarImage
+                                  src={comment.user.avatar || "/uploads/votri.jpg"}
+                                  alt="User Avatar"
+                                />
+                                <AvatarFallback>{comment.user.username?.charAt(0) || "U"}</AvatarFallback>
+                              </Avatar>
+                              {/* Comment user name set to white */}
+                              <span className="font-semibold text-sm text-white">{comment.user.username}</span>
+                              <span className="text-xs text-[#CCCCCC] ml-2">{new Date(comment.created_at).toLocaleDateString()}</span>
+
+                              {user && comment.user_id === user.id && (
+                                <div className="ml-auto flex space-x-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    onClick={() => {
+                                      setEditingComment({ id: comment.id, postId: post.id, content: comment.content })
+                                    }}
+                                  >
+                                    <Edit className="h-4 w-4 text-[#CCCCCC] hover:text-[#FF9900]" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    onClick={() => handleDeleteComment(comment.id, post.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4 text-[#CCCCCC] hover:text-[#FF9900]" />
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                            {/* Comment text set to white */}
+                            <p className="text-sm text-white">{comment.content}</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-[#666666]">No comments yet.</p>
+                    )}
+
+                    {/* Add Comment Form */}
+                    {user && (
+                      <div className="mt-2 flex items-center space-x-2">
+                        <form
+                          className="flex items-center space-x-2 w-full"
+                          onSubmit={(e) => {
+                            e.preventDefault()
+                            handleAddComment(post.id)
+                          }}
+                        >
+                          <Input
+                            type="text"
+                            value={newComments[post.id] || ''}
+                            onChange={(e) => setNewComments({ ...newComments, [post.id]: e.target.value })}
+                            placeholder="Write a comment..."
+                            className="w-full p-2 bg-black border border-[#333333] rounded focus:outline-none focus:ring-2 focus:ring-[#FF9900] text-white"
+                          />
+                          <Button
+                            type="submit"
+                            variant="ghost"
+                            size="icon"
+                            className="text-[#CCCCCC] hover:text-[#FF9900]"
+                          >
+                            <Send className="w-6 h-6" />
+                          </Button>
+                        </form>
+                      </div>
+                    )}
+                  </div>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {posts.meta && (
+            <div className="flex justify-center items-center space-x-2 mt-6">
+              {posts.meta.current_page > 1 && (
+                <>
+                  <Link
+                    href="?page=1"
+                    className="px-4 py-2 bg-[#222222] text-white rounded-md hover:bg-[#FF9900] transition-colors"
+                  >
+                    First
+                  </Link>
+                  <Link
+                    href={`?page=${posts.meta.current_page - 1}`}
+                    className="px-4 py-2 bg-[#222222] text-white rounded-md hover:bg-[#FF9900] transition-colors"
+                  >
+                    Previous
+                  </Link>
+                </>
+              )}
+
+              {posts.meta.current_page < posts.meta.last_page && (
+                <>
+                  <Link
+                    href={`?page=${posts.meta.current_page + 1}`}
+                    className="px-4 py-2 bg-[#222222] text-white rounded-md hover:bg-[#FF9900] transition-colors"
+                  >
+                    Next
+                  </Link>
+                  <Link
+                    href={`?page=${posts.meta.last_page}`}
+                    className="px-4 py-2 bg-[#222222] text-white rounded-md hover:bg-[#FF9900] transition-colors"
+                  >
+                    Last
+                  </Link>
+                </>
+              )}
+            </div>
+          )}
         </div>
 
-        <Tabs defaultValue={current_filter || 'all'} className="w-full">
-          <TabsList className="bg-custom-darkGray">
-            <TabsTrigger value="all">All Posts</TabsTrigger>
-            <TabsTrigger value="my-posts">My Posts</TabsTrigger>
-            <TabsTrigger value="liked">Liked Posts</TabsTrigger>
-          </TabsList>
-          <TabsContent value="all" className="mt-6">
-            <ScrollArea className="h-[calc(100vh-300px)]">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
-                {posts.data.map((post) => (
-                  <Card key={post.id} className="bg-custom-darkGray border-none">
-                    <CardHeader>
-                      <div className="flex justify-between items-start">
-                        <div className="flex items-center space-x-4">
-                          <Avatar>
-                            <AvatarImage src={post.user.avatar} />
-                            <AvatarFallback>{post.user.username[0].toUpperCase()}</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <h3 className="font-semibold text-white">{post.user.username}</h3>
-                            <p className="text-sm text-custom-lightGray">
-                              {new Date(post.created_at).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="bg-custom-darkGray border-none">
-                            <DropdownMenuItem className="text-white">
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-500">
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <h2 className="text-xl font-bold text-white mb-2">{post.title}</h2>
-                      <p className="text-custom-lightGray">{post.content}</p>
-                      {post.modules && post.modules.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-4">
-                          {post.modules.map((module) => (
-                            <Badge key={module.id} variant="secondary" className="bg-custom-orange/20 text-custom-orange">
-                              {module.name}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </CardContent>
-                    <CardFooter className="flex justify-between">
-                      <div className="flex space-x-4">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleLikeDislike(post.id, 'like')}
-                          className={cn(
-                            'text-custom-lightGray hover:text-custom-orange',
-                            post.liked && 'text-custom-orange'
-                          )}
-                        >
-                          <ThumbsUp className="h-4 w-4 mr-1" />
-                          {post.like_count}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleLikeDislike(post.id, 'dislike')}
-                          className={cn(
-                            'text-custom-lightGray hover:text-red-500',
-                            post.disliked && 'text-red-500'
-                          )}
-                        >
-                          <ThumbsDown className="h-4 w-4 mr-1" />
-                          {post.dislike_count}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-custom-lightGray hover:text-custom-orange"
-                        >
-                          <MessageCircle className="h-4 w-4 mr-1" />
-                          {post.comments.length}
-                        </Button>
-                      </div>
-                      <Badge variant="secondary" className="bg-custom-gray text-custom-lightGray">
-                        {post.view_count} views
-                      </Badge>
-                    </CardFooter>
-                  </Card>
-                ))}
+        {/* Edit Comment Modal */}
+        <Dialog open={!!editingComment.id} onOpenChange={(open) => !open && setEditingComment({ id: null, postId: null, content: '' })}>
+          <DialogContent className="bg-[#1E1E1E] text-white border-none">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-[#FF6B00]">Edit Comment</DialogTitle>
+            </DialogHeader>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                handleEditComment()
+              }}
+              className="space-y-4"
+            >
+              <Textarea
+                value={editingComment.content}
+                onChange={(e) => setEditingComment(prev => ({ ...prev, content: e.target.value }))}
+                rows={4}
+                required
+                className="w-full p-3 bg-[#2C2C2C] border border-gray-600 text-white rounded-lg"
+              />
+
+              <div className="flex justify-end space-x-2">
+                <Button type="submit" className="bg-[#FF6B00] text-white px-4 py-2 rounded hover:bg-[#FF8533]">
+                  Update
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setEditingComment({ id: null, postId: null, content: '' })}
+                  className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                >
+                  Cancel
+                </Button>
               </div>
-            </ScrollArea>
-          </TabsContent>
-          {/* ... other TabsContent components ... */}
-        </Tabs>
+            </form>
+          </DialogContent>
+        </Dialog>
       </main>
     </Layout>
   )

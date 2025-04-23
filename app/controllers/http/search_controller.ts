@@ -2,40 +2,44 @@ import { HttpContext } from '@adonisjs/core/http'
 import Post from '#models/post'
 import Module from '#models/module'
 import User from '#models/user'
-import { ModelPaginatorContract } from '@adonisjs/lucid/types/model'
 
 export default class SearchController {
-  async handle({ request, inertia }: HttpContext) {
+  async handle({ request, response }: HttpContext) {
     const query = request.input('query', '')
     let type = 'post'
-    let results: User[] | Module[] | ModelPaginatorContract<Post> = []
+    let results: User[] | Module[] | Post[] = []
 
     if (query.startsWith('@')) {
       type = 'user'
+      const keyword = query.slice(1)
       results = await User.query()
-        .where('username', 'like', `%${query.slice(1)}%`)
+        .where('username', 'like', `%${keyword}%`)
+        .orWhere('email', 'like', `%${keyword}%`)
+        .select('id', 'username', 'email', 'avatar')
         .limit(10)
     } else if (query.startsWith('#')) {
       type = 'module'
+      const keyword = query.slice(1)
       results = await Module.query()
-        .where('name', 'like', `%${query.slice(1)}%`)
+        .where('name', 'like', `%${keyword}%`)
+        .orWhere('description', 'like', `%${keyword}%`)
+        .select('id', 'name', 'description')
         .limit(10)
     } else {
       results = await Post.query()
         .where('title', 'like', `%${query}%`)
         .orWhere('content', 'like', `%${query}%`)
-        .preload('user')
-        .paginate(1, 10)
+        .preload('user', (userQuery) => {
+          userQuery.select('id', 'username', 'avatar')
+        })
+        .select('id', 'title', 'content', 'user_id', 'created_at')
+        .orderBy('created_at', 'desc')
+        .limit(10)
     }
 
-    const serializedResults =
-      type === 'post'
-        ? (results as ModelPaginatorContract<Post>).serialize()
-        : (results as (User | Module)[]).map((result) => result.serialize())
-
-    return inertia.render('search/results', {
+    return response.json({
       type,
-      results: serializedResults,
+      results: results.map((result) => result.serialize()),
     })
   }
 }
