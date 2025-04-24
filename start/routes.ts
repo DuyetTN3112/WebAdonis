@@ -1,3 +1,4 @@
+// start/routes.ts
 import router from '@adonisjs/core/services/router'
 import { middleware } from './kernel.js'
 
@@ -28,24 +29,28 @@ router
       .use(middleware.auth())
 
     // Protected routes
+    router.get('/posts', [() => import('#controllers/http/post_controller'), 'index'])
     router
-      .get('/posts', [() => import('#controllers/http/post_controller'), 'index'])
+      .get('/module', [() => import('#controllers/http/module_controller'), 'index'])
       .use(middleware.auth())
     router
-      .get('/modules', [() => import('#controllers/http/module_controller'), 'index'])
+      .post('/post/:id/like-dislike', [
+        () => import('#controllers/http/post_controller'),
+        'likeDislike',
+      ])
       .use(middleware.auth())
 
     // API routes (protected)
     router
       .get('/api/modules', [() => import('#controllers/http/module_controller'), 'getModules'])
       .use(middleware.auth())
-    router
-      .get('/api/modules/:id/posts', [
-        () => import('#controllers/http/module_controller'),
-        'getPosts',
-      ])
-      .use(middleware.auth())
+    // router
+    //   .get('/api/modules/:id/posts', [
+    //     () => import('#controllers/http/module_controller'),
+    //     'getPosts',
+    //   ])
+    //   .use(middleware.auth())
 
-    router.get('/search', '#controllers/search_controller.handle').use(middleware.auth())
+    router.get('/search', '#controllers/http/search_controller.handle').use(middleware.auth())
   })
   .use(middleware.silentAuth())

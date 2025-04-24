@@ -1,10 +1,11 @@
+// app/Controllers/Http/AuthController.ts
 import { inject } from '@adonisjs/core'
-import { HttpContext } from '@adonisjs/core/http'
+import type { HttpContext } from '@adonisjs/core/http'
 import User, { UserRole } from '#models/user'
 import { registerValidator, loginValidator } from '#validators/auth'
 // import { updateAccountValidator } from '#validators/auth'
-// import type { MultipartFile } from '@adonisjs/core/bodyparser'
-// import hash from '@adonisjs/core/services/hash'
+// import type { MultipartFile } from '@ioc:Adonis/Core/BodyParser'
+// import hash from '@ioc:Adonis/Core/Hash'
 
 type RegisterData = {
   email: string
@@ -15,36 +16,21 @@ type RegisterData = {
   avatar?: string
 }
 
-// type LoginData = {
-//   email: string
-//   password: string
-// }
-
-// type UpdateAccountData = {
-//   username?: string
-//   phone_number?: string
-//   current_password?: string
-//   new_password?: string
-//   avatar?: MultipartFile
-// }
-
 export default class AuthController {
   @inject()
-  async register({ inertia, request }: HttpContext) {
+  public async register({ inertia, request }: HttpContext) {
     console.log('Rendering register page')
     return inertia.render('auth', { csrfToken: request.csrfToken })
   }
 
   @inject()
-  async login({ inertia, request }: HttpContext) {
-    console.log('Rendering login page')
+  public async login({ inertia, request }: HttpContext) {
     return inertia.render('auth', { showLogin: true, csrfToken: request.csrfToken })
   }
 
   @inject()
-  async store({ request, response, auth, session }: HttpContext) {
+  public async store({ request, response, auth, session }: HttpContext) {
     console.log('Starting user registration process')
-
     try {
       const data = (await request.validateUsing(registerValidator)) as RegisterData
       console.log('Registration data:', data)
@@ -67,10 +53,7 @@ export default class AuthController {
       }
 
       console.log('Creating new user...')
-      const user = await User.create({
-        ...data,
-        role: UserRole.USER,
-      })
+      const user = await User.create({ ...data, role: UserRole.USER })
       console.log('User created:', user.toJSON())
 
       console.log('Logging in user...')
@@ -88,48 +71,23 @@ export default class AuthController {
   }
 
   @inject()
-  async authenticate({ request, response, auth, session }: HttpContext) {
+  public async authenticate({ request, response, auth, session }: HttpContext) {
     try {
-      console.log('Request body:', request.body()) // Log toàn bộ body request
-
       const { email, password } = await request.validateUsing(loginValidator)
-      console.log('Validated credentials:', { email, password })
-
-      // Kiểm tra CSRF token
-      console.log('CSRF token:', request.input('_csrf'))
-
       const user = await User.verifyCredentials(email, password)
-      console.log('User found:', user.toJSON())
-
       await auth.use('web').login(user)
-      console.log('Login successful. Session:', {
-        isAuthenticated: auth.isAuthenticated,
-        user: auth.user,
-      })
-      return response.redirect().toRoute(user.role === UserRole.ADMIN ? 'admin.dashboard' : 'post')
+      return response.redirect().toRoute('post')
     } catch (error) {
-      console.error('Authentication failed:', {
-        message: error.message,
-        code: error.code,
-        stack: error.stack,
-        session: session.all(),
-        headers: request.headers(),
-        cookies: request.cookiesList(),
-      })
-
-      session.flash('errors', {
-        email: 'Thông tin đăng nhập không chính xác',
-        _csrf: request.input('_csrf'), // Debug CSRF token
-      })
-
+      // bug DB, hoặc creds sai
+      session.flash('errors', { error: 'Thông tin đăng nhập không chính xác' })
+      // Redirect back (Inertia sẽ gửi header X-Inertia-Location)
       return response.redirect().back()
     }
   }
 
   @inject()
-  async logout({ response, auth }: HttpContext) {
+  public async logout({ response, auth }: HttpContext) {
     console.log('Starting logout process')
-
     try {
       console.log('Logging out user...')
       await auth.use('web').logout()
@@ -144,52 +102,17 @@ export default class AuthController {
     }
   }
 
-  // Comment phương thức updateProfile theo yêu cầu
+  // Commented out per requirements
   /*
   @inject()
-  async updateProfile({ request, response, auth, session }: HttpContext) {
-    const user = auth.getUserOrFail()
-    const data = (await request.validateUsing(updateAccountValidator)) as UpdateAccountData
-
-    try {
-      const updateData: Partial<UpdateAccountData> = {
-        username: data.username,
-        phone_number: data.phone_number,
-      }
-
-      if (data.avatar) {
-        const file = data.avatar
-        const fileName = `${Date.now()}-${file.clientName}`
-        await file.moveToDisk('uploads', { name: fileName })
-        updateData.avatar = `/uploads/${fileName}`
-      }
-
-      if (data.current_password && data.new_password) {
-        const isPasswordValid = await hash.verify(user.password, data.current_password)
-        if (!isPasswordValid) {
-          session.flash('errors', { error: 'Mật khẩu hiện tại không đúng' })
-          return response.redirect().back()
-        }
-        updateData.new_password = data.new_password
-      }
-
-      await user.merge(updateData).save()
-
-      session.flash('success', 'Cập nhật thông tin thành công')
-      return response.redirect().back()
-    } catch (error) {
-      session.flash('errors', { error: 'Không thể cập nhật thông tin' })
-      return response.redirect().back()
-    }
-  }
+  public async updateProfile(...) { ... }
   */
 
   @inject()
-  async deleteAccount({ response, auth }: HttpContext) {
+  public async deleteAccount({ response, auth }: HttpContext) {
     console.log('Starting delete account process')
-
     try {
-      const user = auth.getUserOrFail()
+      const user = auth.use('web').getUserOrFail()
       console.log('User to delete:', user.toJSON())
 
       console.log('Deleting user...')

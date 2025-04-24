@@ -13,6 +13,7 @@ server.use([
 
 router.use([
   () => import('@adonisjs/session/session_middleware'),
+  () => import('#middleware/csrf_debug_middleware'),
   () => import('#middleware/debug_middleware'),
   () => import('@adonisjs/shield/shield_middleware'),
   () => import('@adonisjs/core/bodyparser_middleware'),
