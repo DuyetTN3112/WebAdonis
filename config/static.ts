@@ -1,10 +1,10 @@
-  import { defineConfig } from '@adonisjs/static'
+import { defineConfig } from '@adonisjs/static'
 
-  const staticServerConfig = defineConfig({
-    enabled: true,
-    etag: true,
-    lastModified: true,
-    dotFiles: 'ignore',
-  })
+const staticServerConfig = defineConfig({
+  enabled: true,
+  etag: true,
+  lastModified: true,
+  dotFiles: 'ignore',
+})
 
-  export default staticServerConfig
+export default staticServerConfig

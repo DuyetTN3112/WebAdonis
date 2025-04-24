@@ -12,7 +12,9 @@ export default class AuthMiddleware {
       guards?: (keyof Authenticators)[]
     } = {}
   ) {
-    await ctx.auth.authenticateUsing(options.guards, { loginRoute: this.redirectTo })
+    await ctx.auth.authenticateUsing(options.guards || ['web'], {
+      loginRoute: this.redirectTo,
+    })
     return next()
   }
 }

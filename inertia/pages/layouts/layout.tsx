@@ -1,13 +1,14 @@
 import { ReactNode, useEffect } from 'react'
-import { Link } from '@inertiajs/react'
+import { Link, usePage } from '@inertiajs/react'
 import { Button } from '../../components/ui/button'
 import { Separator } from '../../components/ui/separator'
 import { Grid, Bell, User, LogOut, HelpCircle, MessageSquare } from 'lucide-react'
 import SearchInput from '../../components/search/search_input'
 
 export default function MainLayout({ children }: { children: ReactNode }) {
+  const { auth } = usePage().props
+
   useEffect(() => {
-    // Load feather icons
     import('feather-icons').then((feather) => feather.replace())
   }, [])
 
@@ -40,7 +41,12 @@ export default function MainLayout({ children }: { children: ReactNode }) {
               </span>
             </Button>
           </div>
-          <Button variant="ghost" size="icon" className="rounded-full bg-[#222222] hover:bg-[#333333]" asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full bg-[#222222] hover:bg-[#333333]"
+            asChild
+          >
             <Link href="/user">
               <User className="text-[#FF9900] h-5 w-5" />
             </Link>
@@ -53,11 +59,21 @@ export default function MainLayout({ children }: { children: ReactNode }) {
         {/* Sidebar */}
         <aside className="w-[190px] h-[calc(200vh-5rem)] bg-black flex flex-col items-start py-6">
           <div className="flex flex-col gap-[15px] w-full">
-            <NavLink href="/users" icon={<User className="text-[#FF9900] w-5 h-10" />}>Users</NavLink>
-            <NavLink href="/posts" icon={<MessageSquare className="text-[#FF9900] w-5 h-5" />}>Posts</NavLink>
-            <NavLink href="/modules" icon={<Grid className="text-[#FF9900] w-5 h-5" />}>Module</NavLink>
-            <NavLink href="/feedback" icon={<HelpCircle className="text-[#FF9900] w-5 h-5" />}>Feedback</NavLink>
-            <NavLink href="/logout" icon={<LogOut className="text-[#FF9900] w-5 h-5" />}>Logout</NavLink>
+            <NavLink href="/users" icon={<User className="text-[#FF9900] w-5 h-10" />}>
+              Users
+            </NavLink>
+            <NavLink href="/posts" icon={<MessageSquare className="text-[#FF9900] w-5 h-5" />}>
+              Posts
+            </NavLink>
+            <NavLink href="/modules" icon={<Grid className="text-[#FF9900] w-5 h-5" />}>
+              Module
+            </NavLink>
+            <NavLink href="/feedback" icon={<HelpCircle className="text-[#FF9900] w-5 h-5" />}>
+              Feedback
+            </NavLink>
+            <NavLink href="/logout" icon={<LogOut className="text-[#FF9900] w-5 h-5" />}>
+              Logout
+            </NavLink>
             <Separator className="bg-gray-600 my-2" />
           </div>
         </aside>
