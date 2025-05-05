@@ -55,7 +55,7 @@ export default class Post extends BaseModel {
   declare comments: HasMany<typeof Comment>
 
   @manyToMany(() => Module, {
-    pivotTable: 'module_posts',
+    pivotTable: 'module_post',
     pivotForeignKey: 'post_id',
     pivotRelatedForeignKey: 'module_id',
   })

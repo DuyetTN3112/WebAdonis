@@ -15,5 +15,6 @@ export const updatePostValidator = vine.compile(
     title: vine.string().minLength(5),
     content: vine.string().optional(),
     // image: vine.file({ size: '2mb', extnames: ['jpg', 'png'] }).optional(),
+    modules: vine.array(vine.number()).optional(),
   })
 )

@@ -1,0 +1,72 @@
+/* Kiểu cho trang Profile */
+
+/* Màu chủ đạo */
+:root {
+  --color-orange: #FF9900;
+  --color-black: #000000;
+  --color-dark-gray: #1A1A1A;
+  --color-medium-gray: #222222;
+  --color-light-gray: #333333;
+  --color-text-gray: #999999;
+}
+
+/* Card Profile */
+.profile-card {
+  background-color: var(--color-dark-gray);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.profile-avatar {
+  position: relative;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.profile-avatar img {
+  transition: all 0.3s ease;
+}
+
+.profile-avatar:hover img {
+  filter: brightness(0.9);
+}
+
+/* Card hoạt động */
+.activity-card {
+  background-color: var(--color-dark-gray);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.activity-card .border-l-4 {
+  transition: all 0.3s ease;
+}
+
+.activity-card .border-l-4:hover {
+  background-color: rgba(255, 153, 0, 0.1);
+  padding-left: 1.25rem;
+}
+
+/* Card bài viết */
+.post-card {
+  background-color: var(--color-dark-gray);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.post-card:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  border-color: var(--color-orange);
+}
+
+/* Nút và tương tác */
+button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-orange);
+}
+
+input:focus, textarea:focus {
+  border-color: var(--color-orange);
+  box-shadow: 0 0 0 2px rgba(255, 153, 0, 0.2);
+} 

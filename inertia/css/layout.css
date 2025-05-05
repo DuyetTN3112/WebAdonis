@@ -1,0 +1,403 @@
+/* Search results styles */
+#searchResults {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 400px;
+  overflow-y: auto;
+  background-color: #222222;
+  border: 1px solid #333333;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 50;
+}
+
+#searchResults::-webkit-scrollbar {
+  width: 8px;
+}
+
+#searchResults::-webkit-scrollbar-track {
+  background: #333333;
+}
+
+#searchResults::-webkit-scrollbar-thumb {
+  background: #FF9900;
+  border-radius: 4px;
+}
+
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #222;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #444;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #666;
+}
+
+/* Hover effects for sidebar items */
+.sidebar-item:hover {
+  background-color: #FF9900;
+  color: #000000;
+}
+
+.sidebar-item:hover svg {
+  color: #000000 !important;
+}
+
+/* Custom styles for the notification panel */
+.notification-panel {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 4px;
+  width: 380px;
+  max-height: 85vh;
+  background-color: #000000;
+  border: 2px solid #FF9900;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.notification-header {
+  position: sticky;
+  top: 0;
+  background-color: #000000;
+  padding: 16px 20px;
+  border-bottom: 2px solid #333333;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 2;
+}
+
+.notification-list {
+  max-height: calc(85vh - 60px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #FF9900 #333333;
+}
+
+.notification-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notification-list::-webkit-scrollbar-track {
+  background: #333333;
+  border-radius: 3px;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+  background: #FF9900;
+  border-radius: 3px;
+}
+
+/* Basic layout spacing */
+main {
+  padding: 1rem;
+}
+
+/* Main layout background */
+body {
+  background-color: #000000;
+  color: white;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+/* Sidebar styling */
+nav a {
+  position: relative;
+  overflow: hidden;
+}
+
+nav a:hover {
+  transform: translateX(4px);
+  transition: transform 0.3s;
+}
+
+nav a::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: 0;
+  background-color: #FF9900;
+  transition: width 0.3s ease;
+  border-radius: 2px;
+}
+
+nav a:hover::before {
+  width: 30px;
+}
+
+/* Active item indicator */
+nav a.active::before {
+  width: 30px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-10px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Apply animations */
+main {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+nav a {
+  animation: slideIn 0.3s ease-in-out;
+  animation-fill-mode: both;
+}
+
+nav a:nth-child(1) { animation-delay: 0.05s; }
+nav a:nth-child(2) { animation-delay: 0.1s; }
+nav a:nth-child(3) { animation-delay: 0.15s; }
+nav a:nth-child(4) { animation-delay: 0.2s; }
+nav a:nth-child(5) { animation-delay: 0.25s; }
+
+/* Logo styling */
+.logo {
+  position: relative;
+  overflow: hidden;
+}
+
+.logo::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #FF9900, transparent);
+}
+
+/* Avatar styling */
+.profile-avatar {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.profile-avatar:hover {
+  transform: scale(1.08);
+  border-color: #FF9900 !important;
+  box-shadow: 0 0 15px rgba(255, 153, 0, 0.3);
+}
+
+/* Buttons */
+button {
+  transition: all 0.2s ease;
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+/* Menu item spacing */
+nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Mobile sidebar */
+@media (max-width: 1024px) {
+  .sidebar-closed {
+    transform: translateX(-100%);
+  }
+  
+  .sidebar-overlay {
+    backdrop-filter: blur(3px);
+  }
+}
+
+/* Custom scrollbar */
+.sidebar-items::-webkit-scrollbar {
+  width: 5px;
+}
+
+.sidebar-items::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-items::-webkit-scrollbar-thumb {
+  background-color: #333;
+  border-radius: 10px;
+}
+
+.sidebar-items::-webkit-scrollbar-thumb:hover {
+  background-color: #444;
+}
+
+/* Active item highlight */
+.active-nav-item {
+  position: relative;
+}
+
+.active-nav-item::before {
+  content: '';
+  position: absolute;
+  left: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 60%;
+  background-color: #FF9900;
+  border-radius: 2px;
+}
+
+/* Avatar hover effect */
+.avatar-container:hover img {
+  transform: scale(1.05);
+}
+
+.avatar-container img {
+  transition: transform 0.2s ease;
+}
+
+/* Header shadow on scroll */
+header {
+  transition: box-shadow 0.3s ease;
+}
+
+header.scrolled {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Button hover effect */
+button.with-hover-effect:hover {
+  transform: translateY(-2px);
+  transition: transform 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Glass effect for some UI elements */
+.glass-effect {
+  background: rgba(26, 26, 26, 0.7);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Navigation links */
+.nav-link {
+  position: relative;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+  background-color: rgba(255, 153, 0, 0.08);
+  transform: translateX(6px);
+}
+
+/* Animation effect on sidebar toggle */
+@keyframes slideInRight {
+  from { transform: translateX(-20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Smooth content transition */
+.logo span, .nav-link span {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Logo styles */
+.logo {
+  transition: all 0.3s ease;
+}
+
+.logo:hover .bg-\[\#FF9900\] {
+  transform: rotate(5deg) scale(1.1);
+  transition: all 0.3s ease;
+}
+
+/* Profile avatar effect */
+.profile-avatar {
+  transition: all 0.3s ease;
+}
+
+.profile-avatar:hover {
+  transform: scale(1.08);
+  border-color: #FF9900 !important;
+  box-shadow: 0 0 15px rgba(255, 153, 0, 0.3);
+}
+
+/* Button effects */
+button {
+  transition: all 0.2s ease;
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+/* Sidebar toggle button */
+button[class*="absolute right-0 top-1/2"] {
+  transition: all 0.3s ease;
+  z-index: 60;
+}
+
+button[class*="absolute right-0 top-1/2"]:hover {
+  transform: translateY(-50%) translateX(50%) scale(1.2);
+  background-color: #FF9900;
+}
+
+/* Header title animation */
+h1 {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+h1:after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  height: 2px;
+  width: 0;
+  background: linear-gradient(90deg, #FF9900, transparent);
+  transition: width 0.3s ease;
+}
+
+h1:hover:after {
+  width: 100%;
+}
+
+/* Notification bell animation */
+@keyframes bellRing {
+  0% { transform: rotate(0); }
+  20% { transform: rotate(15deg); }
+  40% { transform: rotate(-10deg); }
+  60% { transform: rotate(5deg); }
+  80% { transform: rotate(-5deg); }
+  100% { transform: rotate(0); }
+}
+
+button:has(.lucide-bell):hover .lucide-bell {
+  animation: bellRing 0.6s ease-in-out;
+}
+
+/* Improved content area */
+main > div {
+  padding: 1rem;
+  border-radius: 10px;
+} 

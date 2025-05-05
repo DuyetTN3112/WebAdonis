@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {  useState } from "react";
 import { Search } from "lucide-react";
 import { Input } from "../components/ui/input";
 import Layout from './layouts/layout';
@@ -13,12 +13,14 @@ interface Module {
 
 interface ModuleProps {
   modules: Module[];
+  error?: string;
 }
 
-const ModulePage = ({ modules }: ModuleProps) => {
+const ModulePage = ({ modules, error }: ModuleProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedModuleId, setSelectedModuleId] = useState<number | null>(null);
   const [selectedModulePosts, setSelectedModulePosts] = useState<any[]>([]);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const filteredModules = modules.filter(module =>
     module.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -27,26 +29,44 @@ const ModulePage = ({ modules }: ModuleProps) => {
 
   const handleModuleClick = async (moduleId: number) => {
     setSelectedModuleId(moduleId);
-    const mockPosts = [
-      {
-        title: "Sample Post Title",
-        content: "This is a sample post content for the selected module.",
-        author: "John Doe",
-        created_at: new Date().toISOString(),
-        module_names: modules.find(m => m.id === moduleId)?.name || ""
+    setFetchError(null);
+    try {
+      const response = await fetch(`/api/modules/${moduleId}/posts`, {
+        headers: {
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch posts');
       }
-    ];
-    setSelectedModulePosts(mockPosts);
+      const posts = await response.json();
+      setSelectedModulePosts(posts);
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+      setSelectedModulePosts([]);
+      setFetchError('Failed to load posts for this module.');
+    }
   };
 
   return (
     <Layout>
-    <div className="min-h-screen bg-custom-black text-white">
-      <main className="container mx-auto p-8 space-y-6">
-        <h1 className="text-4xl font-bold text-custom-orange">Modules</h1>
+      <div className="min-h-screen bg-custom-black text-white">
+        <main className="container mx-auto p-8 space-y-6">
+          {error && (
+            <div className="bg-red-500 text-white p-4 rounded-lg">
+              {error}
+            </div>
+          )}
+          {fetchError && (
+            <div className="bg-red-500 text-white p-4 rounded-lg">
+              {fetchError}
+            </div>
+          )}
+          <h1 className="text-4xl font-bold text-custom-orange">Modules</h1>
           <h2 className="text-xl text-custom-lightGray max-w-4xl">
-          A hashtag is a keyword or label that categorizes your post with other, similar posts. Using the right hashtags
-          makes it easier for others to find and answer your post.
+            A hashtag is a keyword or label that categorizes your post with other, similar posts. Using the right hashtags
+            makes it easier for others to find and answer your post.
         </h2>
 
         <div className="relative my-6 max-w-2xl">

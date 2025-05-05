@@ -13,7 +13,7 @@ const sessionConfig = defineConfig({
   cookie: {
     path: '/',
     httpOnly: true,
-    secure: app.inProduction,
+    secure: false,
     sameSite: 'lax',
   },
 
@@ -21,6 +21,12 @@ const sessionConfig = defineConfig({
 
   stores: {
     cookie: stores.cookie(),
+    redis: stores.redis({
+      connection: 'main',
+    }),
+    file: stores.file({
+      location: app.tmpPath('sessions'),
+    }),
   },
 })
 

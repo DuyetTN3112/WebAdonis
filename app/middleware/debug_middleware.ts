@@ -9,7 +9,6 @@ export default class DebugMiddleware {
     console.log('Headers:', ctx.request.headers())
     console.log('Cookies:', ctx.request.cookiesList())
     console.log('Session:', ctx.session.all())
-    console.log('====================')
 
     return next()
   }

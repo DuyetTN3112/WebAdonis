@@ -4,6 +4,8 @@ import Post from '#models/post'
 import Module from '#models/module'
 import User from '#models/user'
 import type { AuthService } from '@adonisjs/auth/types'
+import { createPostValidator, updatePostValidator } from '#validators/post'
+import app from '@adonisjs/core/services/app'
 
 export default class PostsController {
   @inject()
@@ -44,7 +46,63 @@ export default class PostsController {
 
       console.log('Executing query...')
       const posts = await postsQuery.paginate(page, limit)
-      console.log('Posts fetched successfully:', posts.toJSON())
+      const serializedPosts = posts.serialize()
+      
+      // Xử lý DateTime từ Luxon
+      const postsArray = posts.all() // Lấy mảng dữ liệu thô
+      
+      // Log thông tin debug
+      if (postsArray.length > 0) {
+        console.log('Kiểm tra dữ liệu thời gian của bài đăng đầu tiên:', {
+          id: postsArray[0].id,
+          created_at: postsArray[0].created_at ? postsArray[0].created_at.toString() : null,
+          updated_at: postsArray[0].updated_at ? postsArray[0].updated_at.toString() : null,
+        })
+      } else {
+        console.log('Không có bài đăng')
+      }
+
+      // Cập nhật thời gian trong dữ liệu serialized
+      serializedPosts.data = serializedPosts.data.map((post: any) => {
+        // Tìm post gốc tương ứng
+        const originalPost = postsArray.find((p: any) => p.id === post.id)
+        if (originalPost) {
+          // Chuyển đổi DateTime của Luxon sang chuỗi SQL
+          if (originalPost.created_at) {
+            post.created_at = originalPost.created_at.toSQL()
+            console.log(`Post ${post.id} original date:`, originalPost.created_at.toSQL())
+          }
+          if (originalPost.updated_at) {
+            post.updated_at = originalPost.updated_at.toSQL()
+          }
+
+          // Làm tương tự với comments
+          if (post.comments && Array.isArray(post.comments) && originalPost.$preloaded?.comments) {
+            const commentsWithDates = originalPost.$preloaded.comments
+            
+            post.comments = post.comments.map((comment: any) => {
+              // Tìm comment gốc tương ứng
+              const originalComment = commentsWithDates.find((c: any) => c.id === comment.id)
+              if (originalComment && originalComment.created_at) {
+                comment.created_at = originalComment.created_at.toSQL()
+                console.log(`Comment ${comment.id} original date:`, originalComment.created_at.toSQL())
+                
+                if (originalComment.updated_at) {
+                  comment.updated_at = originalComment.updated_at.toSQL()
+                }
+              }
+              return comment
+            })
+          }
+        }
+        return post
+      })
+
+      console.log('Posts đã được chuẩn hóa')
+
+      // Get all modules for create post
+      const modules = await Module.all()
+
       // More defensive auth handling
       let user = null
       try {
@@ -61,9 +119,10 @@ export default class PostsController {
 
       console.log('Preparing response...')
       return inertia.render('post', {
-        posts: posts.serialize(),
+        posts: serializedPosts,
         user: user ? user.serialize() : null,
         current_filter: filter,
+        modules: modules.map((module) => module.serialize()),
       })
     } catch (error) {
       console.error('Detailed error in index:', {
@@ -162,6 +221,175 @@ export default class PostsController {
     } catch (error) {
       console.error('Error in search:', error)
       return response.status(500).json({ message: 'Error performing search', error })
+    }
+  }
+
+  @inject()
+  async store({ request, response, auth }: HttpContext) {
+    try {
+      const user = auth.use('web').getUserOrFail()
+      const data = await request.validateUsing(createPostValidator)
+      // Upload image if exists
+      let imagePath = null
+      const image = request.file('image')
+      if (image) {
+        await image.move(app.makePath('public/uploads'), {
+          name: `${Date.now()}-${image.clientName}`,
+          overwrite: true,
+        })
+
+        if (image.isValid) {
+          imagePath = `uploads/${image.fileName}`
+        }
+      }
+
+      // Create post
+      const post = await Post.create({
+        user_id: user.id,
+        title: data.title,
+        content: data.content || '',
+        image: imagePath,
+        view_count: 0,
+        like_count: 0,
+        dislike_count: 0,
+      })
+
+      // Attach modules if provided
+      if (data.modules && data.modules.length > 0) {
+        await post.related('modules').attach(data.modules)
+      }
+
+      // Return post with related data
+      await post.load('user')
+      await post.load('modules')
+
+      return response.json({
+        success: true,
+        post: post.serialize(),
+      })
+    } catch (error) {
+      console.error('Error in store post:', error)
+      return response.status(500).json({
+        success: false,
+        message: 'Error creating post',
+        error: error.message,
+      })
+    }
+  }
+
+  @inject()
+  async update({ request, response, auth }: HttpContext) {
+    try {
+      // Lấy ID của bài viết từ tham số
+      const postId = request.param('id')
+      
+      // Tìm bài viết theo ID
+      const post = await Post.findOrFail(postId)
+      
+      // Lấy thông tin người dùng đang đăng nhập
+      const user = auth.use('web').getUserOrFail()
+      
+      // Kiểm tra xem người dùng có quyền chỉnh sửa bài viết này không
+      if (post.user_id !== user.id && user.role !== 1) {
+        return response.status(403).json({
+          success: false,
+          message: 'Bạn không có quyền chỉnh sửa bài viết này',
+        })
+      }
+      
+      // Validate dữ liệu cập nhật
+      const data = await request.validateUsing(updatePostValidator)
+      
+      // Cập nhật thông tin cơ bản
+      post.title = data.title
+      post.content = data.content || ''
+      
+      // Xử lý ảnh nếu được cung cấp
+      const image = request.file('image')
+      if (image) {
+        await image.move(app.makePath('public/uploads'), {
+          name: `${Date.now()}-${image.clientName}`,
+          overwrite: true,
+        })
+
+        if (image.isValid) {
+          post.image = `uploads/${image.fileName}`
+        }
+      }
+      
+      // Lưu thay đổi
+      await post.save()
+      
+      // Cập nhật modules nếu được cung cấp
+      if (data.modules) {
+        // Detach tất cả modules hiện tại
+        await post.related('modules').detach()
+        
+        // Attach modules mới
+        if (data.modules.length > 0) {
+          await post.related('modules').attach(data.modules)
+        }
+      }
+      
+      // Load các quan hệ
+      await post.load('user')
+      await post.load('modules')
+      
+      return response.json({
+        success: true,
+        message: 'Bài viết đã được cập nhật thành công',
+        post: post.serialize(),
+      })
+    } catch (error) {
+      console.error('Error updating post:', error)
+      return response.status(500).json({
+        success: false,
+        message: 'Lỗi khi cập nhật bài viết',
+        error: error.message,
+      })
+    }
+  }
+
+  @inject()
+  async destroy({ request, response, auth }: HttpContext) {
+    try {
+      // Lấy ID của bài đăng từ tham số
+      const postId = request.param('id')
+
+      // Tìm bài đăng theo ID
+      const post = await Post.findOrFail(postId)
+
+      // Lấy thông tin người dùng đang đăng nhập
+      const user = auth.use('web').getUserOrFail()
+
+      // Kiểm tra xem người dùng có quyền xóa bài đăng này không
+      if (post.user_id !== user.id && user.role !== 1) {
+        return response.status(403).json({
+          success: false,
+          message: 'Bạn không có quyền xóa bài đăng này',
+        })
+      }
+      
+      // Xóa các liên kết với module trước (nếu có)
+      await post.related('modules').detach()
+      
+      // Xóa tất cả bình luận liên quan đến bài đăng
+      await post.related('comments').query().delete()
+      
+      // Xóa bài đăng
+      await post.delete()
+      
+      return response.json({
+        success: true,
+        message: 'Bài đăng đã được xóa thành công',
+      })
+    } catch (error) {
+      console.error('Error deleting post:', error)
+      return response.status(500).json({
+        success: false,
+        message: 'Lỗi khi xóa bài đăng',
+        error: error.message,
+      })
     }
   }
 }

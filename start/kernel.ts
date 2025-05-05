@@ -1,5 +1,12 @@
 import router from '@adonisjs/core/services/router'
 import server from '@adonisjs/core/services/server'
+import { DateTime, Settings } from 'luxon'
+
+// Cấu hình múi giờ toàn cục cho ứng dụng (Việt Nam - UTC+7)
+Settings.defaultZone = 'Asia/Ho_Chi_Minh'
+Settings.defaultLocale = 'vi-VN'
+console.log('Timezone configured:', Settings.defaultZone)
+console.log('Current DateTime:', DateTime.now().toISO())
 
 server.errorHandler(() => import('#exceptions/handler'))
 
@@ -17,7 +24,6 @@ router.use([
   () => import('#middleware/debug_middleware'),
   () => import('@adonisjs/shield/shield_middleware'),
   () => import('@adonisjs/core/bodyparser_middleware'),
-
   () => import('@adonisjs/auth/initialize_auth_middleware'),
 ])
 

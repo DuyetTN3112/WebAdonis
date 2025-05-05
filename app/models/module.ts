@@ -22,7 +22,7 @@ export default class Module extends BaseModel {
   declare updated_at: DateTime
 
   @manyToMany(() => Post, {
-    pivotTable: 'module_posts',
+    pivotTable: 'module_post',
     pivotForeignKey: 'module_id',
     pivotRelatedForeignKey: 'post_id',
   })

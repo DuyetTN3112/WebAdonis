@@ -17,7 +17,6 @@ export default class CsrfDebugMiddleware {
     console.log('Session token (hashed):', sessionToken)
     console.log('Session data:', ctx.session.all())
     console.log('Cookies:', ctx.request.cookiesList())
-    console.log('==================')
 
     return next()
   }

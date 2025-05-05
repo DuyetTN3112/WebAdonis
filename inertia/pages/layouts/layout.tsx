@@ -1,12 +1,10 @@
 import { ReactNode, useEffect } from 'react'
 import { Link, usePage } from '@inertiajs/react'
-import { Button } from '../../components/ui/button'
-import { Separator } from '../../components/ui/separator'
-import { Grid, Bell, User, LogOut, HelpCircle, MessageSquare } from 'lucide-react'
-import SearchInput from '../../components/search/search_input'
+import { Grid, Bell, User, LogOut, HelpCircle, MessageSquare, Home, Mail, Hash } from 'lucide-react'
+import '../../css/layout.css'
 
 export default function MainLayout({ children }: { children: ReactNode }) {
-  const { auth } = usePage().props
+  const { auth, csrfToken } = usePage().props
 
   useEffect(() => {
     import('feather-icons').then((feather) => feather.replace())
@@ -14,68 +12,54 @@ export default function MainLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <header className="flex items-center justify-between px-4 h-16 bg-custom-darkGray shadow-lg">
+      <meta name="csrf-token" content={csrfToken as string} />
+      <meta name="x-csrf-token" content={csrfToken as string} />
+      <header className="flex items-center justify-between px-4 h-16 bg-[#222222] shadow-lg">
         <div>
-          <span className="text-white text-[60px] font-bold">
+          <span className="text-white text-5xl font-bold">
             Forum<span className="text-[#FF9900]">GW</span>
           </span>
         </div>
 
-        <SearchInput />
+        {/* Search Bar */}
+        <div className="relative flex-grow max-w-2xl mx-auto">
+          <input 
+            type="text" 
+            placeholder="Search on ForumGW" 
+            className="w-full py-2 px-4 pl-10 bg-black text-white rounded-full focus:outline-none focus:ring-2 focus:ring-[#FF9900] text-lg"
+          />
+          <Grid className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#FF9900] w-5 h-5" />
+        </div>
 
         {/* User Menu */}
         <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="icon" className="rounded-full bg-[#222222] hover:bg-[#333333]">
+          <button className="rounded-full bg-[#222222] hover:bg-[#333333] p-3 flex items-center justify-center">
             <Grid className="text-[#FF9900] h-5 w-5" />
-          </Button>
+          </button>
           <div className="relative">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full bg-[#222222] hover:bg-[#333333]"
-            >
+            <button className="rounded-full bg-[#222222] hover:bg-[#333333] p-3 flex items-center justify-center">
               <Bell className="text-[#FF9900] h-5 w-5" />
               <span className="absolute top-0 right-0 bg-[#FF9900] text-black rounded-full px-1.5 py-0.5 text-xs font-bold">
                 0
               </span>
-            </Button>
+            </button>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full bg-[#222222] hover:bg-[#333333]"
-            asChild
-          >
-            <Link href="/user">
-              <User className="text-[#FF9900] h-5 w-5" />
-            </Link>
-          </Button>
+          <Link href="/profile" className="rounded-full bg-[#222222] hover:bg-[#333333] p-3 flex items-center justify-center">
+            <User className="text-[#FF9900] h-5 w-5" />
+          </Link>
         </div>
       </header>
 
       {/* Content Area */}
       <div className="flex">
         {/* Sidebar */}
-        <aside className="w-[190px] h-[calc(200vh-5rem)] bg-black flex flex-col items-start py-6">
-          <div className="flex flex-col gap-[15px] w-full">
-            <NavLink href="/users" icon={<User className="text-[#FF9900] w-5 h-10" />}>
-              Users
-            </NavLink>
-            <NavLink href="/posts" icon={<MessageSquare className="text-[#FF9900] w-5 h-5" />}>
-              Posts
-            </NavLink>
-            <NavLink href="/modules" icon={<Grid className="text-[#FF9900] w-5 h-5" />}>
-              Module
-            </NavLink>
-            <NavLink href="/feedback" icon={<HelpCircle className="text-[#FF9900] w-5 h-5" />}>
-              Feedback
-            </NavLink>
-            <NavLink href="/logout" icon={<LogOut className="text-[#FF9900] w-5 h-5" />}>
-              Logout
-            </NavLink>
-            <Separator className="bg-gray-600 my-2" />
-          </div>
+        <aside className="w-64 h-[calc(100vh-4rem)] bg-black flex flex-col items-start py-6 space-y-4">
+          <SidebarItem href="/" icon={<Home className="text-[#FF9900] w-5 h-5" />} label="Home" />
+          <SidebarItem href="/users" icon={<User className="text-[#FF9900] w-5 h-5" />} label="Users" />
+          <SidebarItem href="/posts" icon={<MessageSquare className="text-[#FF9900] w-5 h-5" />} label="Posts" />
+          <SidebarItem href="/modules" icon={<Hash className="text-[#FF9900] w-5 h-5" />} label="Module" />
+          <SidebarItem href="/feedback" icon={<Mail className="text-[#FF9900] w-5 h-5" />} label="Feedback" />
+          <SidebarLogoutButton icon={<LogOut className="text-[#FF9900] w-5 h-5" />} label="Logout" />
         </aside>
 
         {/* Main Page Content */}
@@ -85,16 +69,34 @@ export default function MainLayout({ children }: { children: ReactNode }) {
   )
 }
 
-function NavLink({ href, children, icon }: { href: string; children: ReactNode; icon?: ReactNode }) {
+function SidebarItem({ href, label, icon }: { href: string; label: string; icon: ReactNode }) {
   return (
-    <Link href={href}>
-      <Button
-        variant="ghost"
-        className="w-full h-[38px] justify-start text-white bg-[#333333] hover:bg-gray-800 hover:text-white px-4 py-2"
-      >
-        <span className="mr-3">{icon}</span>
-        {children}
-      </Button>
+    <Link href={href} className="ml-4 w-48">
+      <div className="sidebar-item flex items-center space-x-4 rounded-full bg-[#222222] p-3 hover:bg-[#FF9900] transition duration-200 group">
+        <div className="w-8 h-8 flex items-center justify-center">
+          {icon}
+        </div>
+        <span className="text-sm text-white group-hover:text-black">{label}</span>
+      </div>
     </Link>
+  )
+}
+
+function SidebarLogoutButton({ label, icon }: { label: string; icon: ReactNode }) {
+  const { csrfToken } = usePage().props
+  
+  return (
+    <form action="/logout" method="POST" className="ml-4 w-48">
+      <input type="hidden" name="_csrf" value={csrfToken as string} />
+      <button
+        type="submit"
+        className="sidebar-item w-full flex items-center space-x-4 rounded-full bg-[#222222] p-3 hover:bg-[#FF9900] transition duration-200 group"
+      >
+        <div className="w-8 h-8 flex items-center justify-center">
+          {icon}
+        </div>
+        <span className="text-sm text-white group-hover:text-black">{label}</span>
+      </button>
+    </form>
   )
 }

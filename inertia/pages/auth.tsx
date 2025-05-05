@@ -4,14 +4,15 @@ import { usePage, router } from '@inertiajs/react'
 import feather from 'feather-icons'
 
 export default function Auth() {
+  const { props } = usePage()
+  const debugError = props.errors?.debug
   const [passwordVisible, setPasswordVisible] = useState(false)
   const [showLogin, setShowLogin] = useState(false)
 
   // Controlled input state for login
   const [loginEmail, setLoginEmail] = useState('')
   const [loginPass, setLoginPass] = useState('')
-
-  const { props } = usePage()
+  
   const errors = props.errors || {}
   const csrfToken = props.csrfToken as string
   const message = props.message as string | undefined
@@ -42,6 +43,18 @@ export default function Auth() {
 
   return (
     <div className="bg-custom-black min-h-screen flex px-4 py-8">
+
+      {debugError && (
+        <div className="fixed bottom-0 left-0 right-0 bg-red-900 p-4 text-xs text-gray-300">
+          <div className="container mx-auto">
+            <details>
+              <summary>Thông tin debug lỗi</summary>
+              <pre className="whitespace-pre-wrap">{JSON.stringify(JSON.parse(debugError), null, 2)}</pre>
+            </details>
+          </div>
+        </div>
+      )}
+
       {/* Left section */}
       <div className="w-1/2 pr-8 flex flex-col items-start">
         <div className="mb-48" />
@@ -205,7 +218,7 @@ export default function Auth() {
                   placeholder="Password"
                   value={loginPass}
                   onChange={e => setLoginPass(e.target.value)}
-                  className="w-full p-2 rounded bg-custom-darkGray text-white(border border-gray-700)"
+                  className="w-full p-2 rounded bg-custom-darkGray text-white border border-gray-700"
                 />
                 <button
                   type="button"
@@ -214,6 +227,7 @@ export default function Auth() {
                 >
                   <i data-feather={passwordVisible ? 'eye-off' : 'eye'}></i>
                 </button>
+                {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
               </div>
               <button
                 type="submit"

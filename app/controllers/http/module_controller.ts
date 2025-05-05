@@ -11,21 +11,26 @@ export default class ModuleController {
   @inject()
   public async index({ inertia, auth }: HttpContext) {
     try {
+      console.log('ModuleController: User authenticated:', auth.user?.toJSON())
       const modules = await Module.all()
-      console.log('Found modules:', modules.length)
+      console.log(
+        'ModuleController: Found modules:',
+        modules.length,
+        modules.map((m) => m.toJSON())
+      )
       console.log('Rendering module page with data:', { modules })
 
       return inertia.render('module', {
         modules: modules,
-        user: auth.user
+        user: auth.user,
       })
     } catch (error) {
-      console.error('Error in ModuleController:', error)
-      console.error('Error stack:', error.stack)
+      console.error('ModuleController: Error loading modules:', error.message)
+      console.error('ModuleController: Error stack:', error.stack)
       return inertia.render('module', {
-        error: 'Error loading modules',
+        error: 'Error loading modules: ' + error.message,
         modules: [],
-        user: auth.user
+        user: auth.user,
       })
     }
   }
@@ -42,7 +47,7 @@ export default class ModuleController {
       console.error('Error in ModuleController.getModules:', error)
       return response.status(500).json({
         message: 'Error loading modules',
-        error: error.message
+        error: error.message,
       })
     }
   }

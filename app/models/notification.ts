@@ -1,38 +1,52 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
+import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
-import User from '#models/user'
-import Post from '#models/post'
-import Comment from '#models/comment'
+import User from './user.js'
+import Post from './post.js'
+import Comment from './comment.js'
 
 export default class Notification extends BaseModel {
+  public static table = 'notification'
+
   @column({ isPrimary: true })
-  declare public id: number
+  declare id: number
 
   @column()
-  declare public user_id: number
+  declare user_id: number
 
   @column()
-  declare public type: 'comment_on_post' | 'tag_in_comment' | 'post_success'
+  declare type: 'comment_on_post' | 'tag_in_comment' | 'post_success'
 
   @column()
-  declare public post_id: number | null
+  declare post_id: number | null
 
   @column()
-  declare public comment_id: number | null
+  declare comment_id: number | null
 
   @column()
-  declare public content: string | null
+  declare content: string
+
+  @column()
+  declare is_read: boolean
 
   @column.dateTime({ autoCreate: true })
-  declare public created_at: DateTime
+  declare created_at: DateTime
 
-  @belongsTo(() => User)
-  declare public user: BelongsTo<typeof User>
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updated_at: DateTime
 
-  @belongsTo(() => Post)
-  declare public post: BelongsTo<typeof Post>
+  @belongsTo(() => User, {
+    foreignKey: 'user_id',
+  })
+  declare user: BelongsTo<typeof User>
 
-  @belongsTo(() => Comment)
-  declare public comment: BelongsTo<typeof Comment>
+  @belongsTo(() => Post, {
+    foreignKey: 'post_id',
+  })
+  declare post: BelongsTo<typeof Post>
+
+  @belongsTo(() => Comment, {
+    foreignKey: 'comment_id',
+  })
+  declare comment: BelongsTo<typeof Comment>
 }
